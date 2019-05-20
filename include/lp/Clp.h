@@ -7,6 +7,8 @@
 #include "RollbackList.h"
 #include "WriteMessage.h"
 #include "SingleReadMessage.h"
+#include "MailboxReadMessage.h"
+#include "MailboxWriteMessage.h"
 #include "SsvId.h"
 #include "LpId.h"
 #include "AbstractValue.h"
@@ -16,6 +18,7 @@
 #include "RangeRoutingTable.h"
 #include "RangeUpdateMessage.h"
 #include "EndMessage.h"
+#include "MailboxSharedState.h"
 
 using namespace std;
 
@@ -24,10 +27,11 @@ namespace pdesmas {
 #define ROLLBACK_BY_RU 2
 #define ROLLBACK_BY_SM 3
 
-  class Clp: public Lp {
-    private:
+   class Clp: public Lp {
+   private:
       Router* fRouter;
       SharedState fSharedState;
+      MailboxSharedState fMailboxSharedState;
       bool fEndMessageProcessed;
 
       unsigned long GetLvt() const;
@@ -36,7 +40,13 @@ namespace pdesmas {
       void ProcessMessage(const SingleReadAntiMessage*);
       void ProcessMessage(const WriteMessage*);
       void ProcessMessage(const WriteAntiMessage*);
+
+      void ProcessMessage(const MailboxReadMessage*); // new action msgs
+
+      void ProcessMessage(const MailboxWriteMessage*);
+
       void ProcessMessage(const EndMessage*);
+
       void PostProcessMessage();
 
       void Initialise();
@@ -58,7 +68,7 @@ namespace pdesmas {
       void InitialisePortRanges(const Initialisor*);
 #endif
 
-    public:
+   public:
       Clp();
       Clp(unsigned int, unsigned int, unsigned int, unsigned int, unsigned long, unsigned long, const string);
       ~Clp();
@@ -67,6 +77,7 @@ namespace pdesmas {
       void SetGvt(unsigned long);
       void Send();
       void Receive();
-  };
+
+   };
 }
 #endif

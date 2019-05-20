@@ -1,41 +1,37 @@
-#ifndef _STATEVARIABLE_H_
-#define _STATEVARIABLE_H_
+#ifndef PDES_MAS_MAILBOXVARIABLE_H
+#define PDES_MAS_MAILBOXVARIABLE_H
 
-#include "WritePeriod.h"
-#include "RollbackList.h"
-#include "WriteStatus.h"
-#include "SerialisableList.h"
-#include "Log.h"
+#include <util/Serialisable.h>
+#include <state/SsvId.h>
+#include <state/AbstractValue.h>
+#include <types/SerialisableList.h>
 
 using namespace std;
-
 namespace pdesmas {
-   class StateVariable : public Serialisable {
+   class MailboxVariable : public Serialisable {
    private:
-      SsvId fStateVariableID;
-      SerialisableList<WritePeriod> fWritePeriodList;
-      unsigned long fReadUntil;
+      SsvId MbStateVariableID;
+      SerialisableList<AbstractValue> MessageList;
+      unsigned long ReadUntil; //null for normal SSVs
 
    public:
-      StateVariable();
+      MailboxVariable();
 
-      StateVariable(const SsvId &);
+      MailboxVariable(const SsvId &);
 
-      StateVariable(const StateVariable &);
+      MailboxVariable(const MailboxVariable &);
 
-      ~StateVariable();
+      ~MailboxVariable();
 
       const SsvId &GetVariableId() const;
 
-      unsigned long GetReadUntil() const; // to delete
+      unsigned long GetReadUntil() const;
 
-      void AddWritePeriod(const AbstractValue *, unsigned long, const LpId &);
+      void AddMessageContent(const AbstractValue *, unsigned long, const LpId &);
 
       void RemoveWritePeriods(unsigned long);
 
       const SerialisableList<WritePeriod> &GetWritePeriodList() const;
-
-      AbstractValue *Read(const LpId &, unsigned long);
 
       AbstractValue *ReadMb(const LpId &, unsigned long, unsigned long);
 
@@ -52,4 +48,6 @@ namespace pdesmas {
       void Deserialise(istream &);
    };
 }
-#endif
+
+
+#endif //PDES_MAS_MAILBOXVARIABLE_H
