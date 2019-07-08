@@ -5,49 +5,50 @@
 #include <state/SsvId.h>
 #include <state/AbstractValue.h>
 #include <types/SerialisableList.h>
+#include <state/MbMessage.h>
 
 using namespace std;
 namespace pdesmas {
-   class MailboxVariable : public Serialisable {
-   private:
-      SsvId MbStateVariableID;
-      SerialisableList<AbstractValue> MessageList;
-      unsigned long ReadUntil; //null for normal SSVs
+    class MailboxVariable : public Serialisable {
+    private:
+        SsvId mbVariableID;
+        LpId ownerAgent;
+        SerialisableList<MbMessage> messageList;
+        unsigned long readUntil;
 
-   public:
-      MailboxVariable();
+    public:
+        MailboxVariable();
 
-      MailboxVariable(const SsvId &);
+        MailboxVariable(const SsvId &);
 
-      MailboxVariable(const MailboxVariable &);
+        MailboxVariable(const MailboxVariable &);
 
-      ~MailboxVariable();
+        ~MailboxVariable();
 
-      const SsvId &GetVariableId() const;
 
-      unsigned long GetReadUntil() const;
+        const SsvId &GetVariableId() const;
 
-      void AddMessageContent(const AbstractValue *, unsigned long, const LpId &);
+        unsigned long GetReadUntil() const;
 
-      void RemoveWritePeriods(unsigned long);
+        const LpId & GetOwnerAgent() const;
 
-      const SerialisableList<WritePeriod> &GetWritePeriodList() const;
+        const SerialisableList<MbMessage> &GetMessageList() const;
 
-      AbstractValue *ReadMb(const LpId &, unsigned long, unsigned long);
+        void AddMbMessage(const AbstractValue *, unsigned long, const LpId &);
 
-      pair<unsigned long, AbstractValue *> ReadWithoutRecord(unsigned long) const;
+        void RemoveMbMessage(unsigned long);
 
-      void WriteWithRollback(const LpId &, const AbstractValue *, unsigned long, WriteStatus &, RollbackList &);
+        void RemoveOldMessage(unsigned long);
 
-      void PerformReadRollback(const LpId &, unsigned long);
+        AbstractValue *ReadMb(const LpId &, unsigned long);
 
-      void PerformWriteRollback(const LpId &, unsigned long, RollbackList &);
+        // TODO rollback functions
 
-      void Serialise(ostream &) const;
+        void Serialise(ostream &) const;
 
-      void Deserialise(istream &);
-   };
+        void Deserialise(istream &);
+    };
 }
 
 
-#endif //PDES_MAS_MAILBOXVARIABLE_H
+#endif
