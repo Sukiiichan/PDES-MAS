@@ -18,7 +18,7 @@
 #include "RangeRoutingTable.h"
 #include "RangeUpdateMessage.h"
 #include "EndMessage.h"
-#include "MailboxSharedState.h"
+#include "MbSharedState.h"
 
 using namespace std;
 
@@ -31,7 +31,7 @@ namespace pdesmas {
    private:
       Router* fRouter;
       SharedState fSharedState;
-      MailboxSharedState fMailboxSharedState;
+      MbSharedState fMailboxSharedState;
       bool fEndMessageProcessed;
 
       unsigned long GetLvt() const;

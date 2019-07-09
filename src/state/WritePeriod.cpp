@@ -22,6 +22,8 @@ WritePeriod::WritePeriod(const WritePeriod& pWritePeriod) {
   fStartTime = pWritePeriod.fStartTime;
   fEndTime = pWritePeriod.fEndTime;
   // Copy the value!
+  // set limit
+
   SetValue(pWritePeriod.fValue);
   // Copy the agent!
   fAgent = LpId(pWritePeriod.fAgent);
@@ -73,6 +75,7 @@ AbstractValue* WritePeriod::GetValueCopy() const {
   return fValue->Clone();
 }
 
+// agent read wp and logged
 AbstractValue* WritePeriod::Read(const LpId& pAgent, unsigned long pTime) {
   fAgentReadMap.insert(make_pair(pAgent, pTime));
   return GetValueCopy();

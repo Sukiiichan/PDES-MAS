@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 project(PDES-MAS)
 find_package(MPI REQUIRED)
 set(CMAKE_CXX_STANDARD 11)
@@ -110,4 +110,4 @@ add_library(PDESMAS SHARED
         src/util/Log.cpp
         src/util/Mutex.cpp
         src/util/Semaphore.cpp
-        src/util/Thread.cpp)
+        src/util/Thread.cpp include/state/MbWritePeriods.h src/messages/MailboxWriteMessage.cpp include/state/MbMessage.h src/state/MbMessage.cpp src/state/MailboxVariable.cpp src/state/MbSharedState.cpp)

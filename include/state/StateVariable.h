@@ -14,7 +14,7 @@ namespace pdesmas {
    private:
       SsvId fStateVariableID;
       SerialisableList<WritePeriod> fWritePeriodList;
-      unsigned long fReadUntil;
+      // unsigned long fReadUntil;
 
    public:
       StateVariable();
@@ -27,8 +27,6 @@ namespace pdesmas {
 
       const SsvId &GetVariableId() const;
 
-      unsigned long GetReadUntil() const; // to delete
-
       void AddWritePeriod(const AbstractValue *, unsigned long, const LpId &);
 
       void RemoveWritePeriods(unsigned long);
@@ -36,8 +34,6 @@ namespace pdesmas {
       const SerialisableList<WritePeriod> &GetWritePeriodList() const;
 
       AbstractValue *Read(const LpId &, unsigned long);
-
-      AbstractValue *ReadMb(const LpId &, unsigned long, unsigned long);
 
       pair<unsigned long, AbstractValue *> ReadWithoutRecord(unsigned long) const;
 

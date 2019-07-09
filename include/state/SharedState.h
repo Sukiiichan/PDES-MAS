@@ -17,7 +17,6 @@ namespace pdesmas {
    class SharedState {
    private:
       map<SsvId, StateVariable> fStateVariableMap;
-      map<SsvId, int> fMailboxStateVariableMap; // to delete
       RangeRoutingTable *fRangeRoutingTable;
       AccessCostCalculator *fAccessCostCalculator;
 
@@ -45,7 +44,6 @@ namespace pdesmas {
 
       AbstractValue *Read(const SsvId &, const LpId &, unsigned long);
 
-      AbstractValue *ReadMb(const SsvId &, const LpId &, unsigned long);
 
       void WriteWithRollback(const SsvId &, const LpId &, const AbstractValue *, unsigned long, WriteStatus &,
                              RollbackList &);
