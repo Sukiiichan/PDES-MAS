@@ -19,7 +19,7 @@ namespace pdesmas {
     public:
         MailboxVariable();
 
-        MailboxVariable(const SsvId &);
+        MailboxVariable(const SsvId &, const LpId &);
 
         MailboxVariable(const MailboxVariable &);
 
