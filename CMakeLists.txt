@@ -3,7 +3,7 @@ project(PDES-MAS)
 find_package(MPI REQUIRED)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_COMPILER mpicxx)
-add_definitions(-DRANGE_QUERIES)
+add_definitions(-DRANGE_QUERIES -DSSV_LOCALISATION)
 link_libraries(m stdc++)
 
 include_directories(
@@ -30,7 +30,6 @@ add_library(PDESMAS SHARED
         src/interface/IAgent.cpp
         src/interface/IAlp.cpp
         src/interface/IdentifierHandler.cpp
-        src/interface/Interface.cpp
         src/lp/AccessCostCalculator.cpp
         src/lp/Clp.cpp
         src/lp/GvtCalculator.cpp
@@ -110,4 +109,4 @@ add_library(PDESMAS SHARED
         src/util/Log.cpp
         src/util/Mutex.cpp
         src/util/Semaphore.cpp
-        src/util/Thread.cpp include/state/MbWritePeriods.h src/messages/MailboxWriteMessage.cpp include/state/MbMessage.h src/state/MbMessage.cpp src/state/MailboxVariable.cpp src/state/MbSharedState.cpp)
+        src/util/Thread.cpp include/state/MbMessage.h src/state/MbMessage.cpp src/state/MailboxVariable.cpp src/state/MbSharedState.cpp)

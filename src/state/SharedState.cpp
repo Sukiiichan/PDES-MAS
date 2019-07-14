@@ -126,29 +126,31 @@ AbstractValue *SharedState::Read(const SsvId &pSSVID, const LpId &pAgentID, unsi
     if (!ContainsVariable(pSSVID)) {
         LOG(logERROR) << "SharedState::Read# trying to perform a read on state variable that doesn't exist";
         exit(1);
-    } else if (fMailboxStateVariableMap.find(pSSVID) != fMailboxStateVariableMap.end()) {
-        // TODO check if needed
-        LOG(logERROR) << "SharedState::Read# trying to perform a read on mailbox";
-        exit(1);
     }
+//    else if (fMailboxStateVariableMap.find(pSSVID) != fMailboxStateVariableMap.end()) {
+//        // TODO check if needed
+//        LOG(logERROR) << "SharedState::Read# trying to perform a read on mailbox";
+//        exit(1);
+//    }
     return fStateVariableMap.find(pSSVID)->second.Read(pAgentID, pTime);
 }
 
-AbstractValue *SharedState::ReadMb(const SsvId &pSSVID, const LpId &pAgentID, unsigned long pTime) {
-    //  TODO rewrite
-    if (!ContainsVariable(pSSVID)) {
-        LOG(logERROR) << "SharedState:ReadMb# trying to perform a read on state variable that doesn't exist";
-        exit(1);
-    } else if (fMailboxStateVariableMap.find(pSSVID) != fMailboxStateVariableMap.end()) {
-        LOG(logERROR) << "SharedState:ReadMb# trying to perform a read on normal SSV";
-        exit(1);
-    } else if (fMailboxStateVariableMap.find(pSSVID)->second != pAgentID.GetId()) {
-        LOG(logERROR) << "ShareState:ReadMb# trying to perform a read on other agent's mailbox";
-        exit(1);
-    }
-    unsigned long pReadUntil = fStateVariableMap.find(pSSVID)->second.GetReadUntil();
-    return fStateVariableMap.find(pSSVID)->second.ReadMb(pAgentID, pTime, pReadUntil);
-}
+//AbstractValue *SharedState::ReadMb(const SsvId &pSSVID, const LpId &pAgentID, unsigned long pTime) {
+//    //  TODO rewrite
+//    if (!ContainsVariable(pSSVID)) {
+//        LOG(logERROR) << "SharedState:ReadMb# trying to perform a read on state variable that doesn't exist";
+//        exit(1);
+//    }
+//    else if (fMailboxStateVariableMap.find(pSSVID) != fMailboxStateVariableMap.end()) {
+//        LOG(logERROR) << "SharedState:ReadMb# trying to perform a read on normal SSV";
+//        exit(1);
+//    } else if (fMailboxStateVariableMap.find(pSSVID)->second != pAgentID.GetId()) {
+//        LOG(logERROR) << "ShareState:ReadMb# trying to perform a read on other agent's mailbox";
+//        exit(1);
+//    }
+//    unsigned long pReadUntil = fStateVariableMap.find(pSSVID)->second.GetReadUntil();
+//    return fStateVariableMap.find(pSSVID)->second.ReadMb(pAgentID, pTime, pReadUntil);
+//}
 
 void SharedState::WriteWithRollback(const SsvId &pSSVID, const LpId &pAgentID, const AbstractValue *pNewValue,
                                     unsigned long pTime, WriteStatus &pWriteStatus, RollbackList &pRollbackList) {

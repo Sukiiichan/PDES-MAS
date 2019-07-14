@@ -30,13 +30,25 @@ bool MbSharedState::ContainsVariable(const SsvId &pSsvId) {
 }
 
 
-void MbSharedState::Add(const SsvId &pSsvId, const AbstractValue *pValue, unsigned long pTime, const LpId &pAgent) {
+void MbSharedState::Add(const SsvId &pSsvId, unsigned long pTime, const LpId &pAgent) {
     if (ContainsVariable(pSsvId)) {
-        
+        LOG(logERROR) << "";
+        exit(1);
     }
+    MailboxVariable newMailboxVariable(pSsvId, pAgent);
+    MailboxVariableMap[pSsvId] = newMailboxVariable;
+    MailboxAgentMap[pSsvId] = pAgent;
 }
 
-void MbSharedState::Insert(const SsvId &, const MailboxVariable &, RollbackList &) {}
+void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariable, RollbackList &pRbList) {
+    if (ContainsVariable(pSsvId)){
+        LOG(logERROR) << "";
+        exit(1);
+    }
+    const LpId &pAgent = pMbVariable.GetOwnerAgent();
+    MailboxVariableMap[pSsvId] = MailboxVariable(pSsvId, pAgent);
+    // MAMap del old
+}
 
 void MbSharedState::Delete(const SsvId &) {}
 

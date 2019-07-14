@@ -11,10 +11,10 @@
 
 using namespace std;
 namespace pdesmas {
-    class MbSharedState : public Serialisable {
+    class MbSharedState {
     private:
         map<SsvId, MailboxVariable> MailboxVariableMap;
-        map<SsvId, unsigned long> MailboxAgentMap; // map agentid with mailbox variable id
+        map<SsvId, LpId > MailboxAgentMap; // map agentid with mailbox variable id
         RangeRoutingTable *RRTable;
         AccessCostCalculator *ACCalculator;
 
@@ -31,7 +31,7 @@ namespace pdesmas {
 
         void UpdateAccessCount(const SsvId &, Direction, unsigned long);
 
-        void Add(const SsvId &, const AbstractValue *, unsigned long, const LpId &);
+        void Add(const SsvId &, unsigned long, const LpId &);
 
         void Insert(const SsvId &, const MailboxVariable &, RollbackList &);
 

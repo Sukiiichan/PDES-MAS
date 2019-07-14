@@ -36,6 +36,8 @@ const SerialisableList<MbMessage> &MailboxVariable::GetMessageList() const {
     return messageList;
 }
 
+// AddMsgList
+
 void MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender) {
     if (pTime >= readUntil) {
         SerialisableList<MbMessage>::iterator mbMessageIterator = messageList.begin();
