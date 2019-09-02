@@ -1,13 +1,12 @@
-//
-// Created by ChenS on 2019/5/4.
-//
-
 #ifndef MAILBOXWRITEMESSAGE_H
 #define MAILBOXWRITEMESSAGE_H
+#include "HasValue.h"
+#include "HasReceiver.h"
+#include "SharedStateMessage.h"
 
 namespace pdesmas {
    class MailboxWriteMessage: public SharedStateMessage,
-                              public HasSSVID,
+                              public HasReceiver,
                               public HasValue {
    private:
       static AbstractMessage* CreateInstance();

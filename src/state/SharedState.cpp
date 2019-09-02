@@ -130,8 +130,7 @@ AbstractValue *SharedState::Read(const SsvId &pSSVID, const LpId &pAgentID, unsi
 //    else if (fMailboxStateVariableMap.find(pSSVID) != fMailboxStateVariableMap.end()) {
 //        // TODO check if needed
 //        LOG(logERROR) << "SharedState::Read# trying to perform a read on mailbox";
-//        exit(1);
-//    }
+//        exit(1);}
     return fStateVariableMap.find(pSSVID)->second.Read(pAgentID, pTime);
 }
 

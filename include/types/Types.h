@@ -35,7 +35,8 @@ namespace pdesmas {
       WRITEMESSAGE = 18,
       WRITERESPONSEMESSAGE = 19,
       MAILBOXREADMESSAGE = 20,
-      MAILBOXWRITEMESSAGE = 21
+      MAILBOXWRITEMESSAGE = 21,
+      MBREADRESPONSEMSG = 22
    };
 
    inline istream& operator>>(istream& pIstream, pdesmasType& pType) {

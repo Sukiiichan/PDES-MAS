@@ -1,36 +1,32 @@
-#include "MailboxReadMessage.h"
+#include "MbReadResponseMsg.h"
+#include "ObjectMgr.h"
+#include "Log.h"
 
 using namespace pdesmas;
 
-MailboxReadMessage::MailboxReadMessage() {
+MbReadResponseMsg::MbReadResponseMsg() {
    RegisterClass(GetType(), &CreateInstance);
 }
 
-MailboxReadMessage::~MailboxReadMessage() {
-   // constructor
+MbReadResponseMsg::~MbReadResponseMsg() {}
+
+pdesmasType MbReadResponseMsg::GetType() const {
+   return MBREADRESPONSEMSG;
 }
 
-pdesmasType MailboxReadMessage::GetType() const {
-   return MAILBOXREADMESSAGE;
-}
-
-AbstractMessage *MailboxReadMessage::CreateInstance() {
-   return new MailboxReadMessage;
-}
-
-void MailboxReadMessage::Serialise(ostream &pOstream) const {
+void MbReadResponseMsg::Serialise(ostream &pOstream) const {
    pOstream << DELIM_LEFT << GetType();
    pOstream << DELIM_VAR_SEPARATOR << fOrigin;
-   pOstream << DELIM_VAR_SEPARATOR << fDestination; // Routing info
+   pOstream << DELIM_VAR_SEPARATOR << fDestination;
    pOstream << DELIM_VAR_SEPARATOR << fTimestamp;
    pOstream << DELIM_VAR_SEPARATOR << fMatternColour;
-   pOstream << DELIM_VAR_SEPARATOR << fNumberOfHops;
    pOstream << DELIM_VAR_SEPARATOR << fIdentifier;
    pOstream << DELIM_VAR_SEPARATOR << fOriginalAlp;
+   pOstream << DELIM_VAR_SEPARATOR << *fValue;
    pOstream << DELIM_RIGHT;
 }
 
-void MailboxReadMessage::Deserialise(istream &pIstream) {
+void MbReadResponseMsg::Deserialise(istream &pIstream) {
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fOrigin;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
@@ -40,12 +36,14 @@ void MailboxReadMessage::Deserialise(istream &pIstream) {
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fMatternColour;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
-   pIstream >> fNumberOfHops;
-   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fIdentifier;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fOriginalAlp;
+   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
+   string valueString;
+   pIstream >> valueString;
+   string value = GetValueString(valueString);
+   fValue = valueClassMap->CreateObject(GetTypeID(valueString));
+   fValue->SetValue(value);
    IgnoreTo(pIstream, DELIM_RIGHT);
 }
-
-

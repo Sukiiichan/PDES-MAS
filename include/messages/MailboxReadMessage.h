@@ -1,7 +1,7 @@
 #ifndef MAILBOXREADMESSAGE_H
 #define MAILBOXREADMESSAGE_H
 
-#include <messages/content/HasSSVID.h>
+#include "HasSSVID.h"
 #include "SharedStateMessage.h"
 
 namespace pdesmas {

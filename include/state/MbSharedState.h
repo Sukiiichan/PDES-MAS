@@ -14,7 +14,7 @@ namespace pdesmas {
     class MbSharedState {
     private:
         map<SsvId, MailboxVariable> MailboxVariableMap;
-        map<SsvId, LpId > MailboxAgentMap; // map agentid with mailbox variable id
+        map<LpId, SsvId> MailboxAgentMap; // map agentid with mailbox variable id
         RangeRoutingTable *RRTable;
         AccessCostCalculator *ACCalculator;
 
@@ -39,8 +39,13 @@ namespace pdesmas {
 
         MailboxVariable GetCopy(const SsvId &);
 
+        bool MbValid(const LpId &);
 
-        AbstractValue *Read(const SsvId &, const LpId &, unsigned long);
+        void WriteMbMsg(const LpId &, const LpId &, unsigned long, const AbstractValue*);
+
+        SsvId GetMbvId(const LpId &);
+
+        AbstractValue *Read(const LpId &, unsigned long);
 
         void RemoveMbMessages(unsigned long);
 

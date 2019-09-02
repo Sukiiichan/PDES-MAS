@@ -1,40 +1,42 @@
-#include "MailboxReadMessage.h"
+#include "MailboxWriteMessage.h"
 
 using namespace pdesmas;
 
-MailboxReadMessage::MailboxReadMessage() {
+MailboxWriteMessage::MailboxWriteMessage() {
    RegisterClass(GetType(), &CreateInstance);
 }
 
-MailboxReadMessage::~MailboxReadMessage() {
-   // constructor
+MailboxWriteMessage::~MailboxWriteMessage() {}
+
+pdesmasType MailboxWriteMessage::GetType() const {
+   return MAILBOXWRITEMESSAGE;
 }
 
-pdesmasType MailboxReadMessage::GetType() const {
-   return MAILBOXREADMESSAGE;
+AbstractMessage* MailboxWriteMessage::CreateInstance() {
+   return new MailboxWriteMessage;
 }
 
-AbstractMessage *MailboxReadMessage::CreateInstance() {
-   return new MailboxReadMessage;
-}
-
-void MailboxReadMessage::Serialise(ostream &pOstream) const {
+void MailboxWriteMessage::Serialise(ostream &pOstream) const {
    pOstream << DELIM_LEFT << GetType();
    pOstream << DELIM_VAR_SEPARATOR << fOrigin;
    pOstream << DELIM_VAR_SEPARATOR << fDestination; // Routing info
+   pOstream << DELIM_VAR_SEPARATOR << fReceiver;
    pOstream << DELIM_VAR_SEPARATOR << fTimestamp;
    pOstream << DELIM_VAR_SEPARATOR << fMatternColour;
    pOstream << DELIM_VAR_SEPARATOR << fNumberOfHops;
    pOstream << DELIM_VAR_SEPARATOR << fIdentifier;
    pOstream << DELIM_VAR_SEPARATOR << fOriginalAlp;
+   pOstream << DELIM_VAR_SEPARATOR << *fValue;
    pOstream << DELIM_RIGHT;
 }
 
-void MailboxReadMessage::Deserialise(istream &pIstream) {
+void MailboxWriteMessage::Deserialise(istream &pIstream) {
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fOrigin;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fDestination;
+   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
+   pIstream >> fReceiver;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fTimestamp;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
@@ -45,7 +47,7 @@ void MailboxReadMessage::Deserialise(istream &pIstream) {
    pIstream >> fIdentifier;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fOriginalAlp;
+   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
+   pIstream >> *fValue;
    IgnoreTo(pIstream, DELIM_RIGHT);
 }
-
-

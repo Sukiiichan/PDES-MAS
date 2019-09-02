@@ -55,6 +55,7 @@ void MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
         }
     } else {
         LOG(logERROR) << "Rollback case 1 occurs";
+        exit(0);
         // TODO call RB
     }
 }

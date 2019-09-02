@@ -31,7 +31,7 @@ namespace pdesmas {
    private:
       Router* fRouter;
       SharedState fSharedState;
-      MbSharedState fMailboxSharedState;
+      MbSharedState fMbSharedState;
       bool fEndMessageProcessed;
 
       unsigned long GetLvt() const;
