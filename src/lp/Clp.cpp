@@ -2,6 +2,7 @@
 #include "Value.h"
 #include "SingleReadResponseMessage.h"
 #include "MbReadResponseMsg.h"
+#include "MbWriteResponseMsg.h"
 #include "WriteAntiMessage.h"
 #include "SingleReadAntiMessage.h"
 #include "LoadBalancingMessage.h"
@@ -427,10 +428,28 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
    // TODO check if rollback
    const AbstractValue *value = pMailboxWriteMessage->GetValue();
    unsigned long time = pMailboxWriteMessage->GetTimestamp();
-   fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAlp(),
-         pMailboxWriteMessage->GetReceiver(), time, value);
+   const LpId& sender = pMailboxWriteMessage->GetOriginalAlp();
+   WriteStatus writeStatus;
+   RollbackList rollbackList;
 
-   
+   fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAlp(),
+                             pMailboxWriteMessage->GetReceiver(), time, value);
+   MbWriteResponseMsg *mbWriteResponseMsg = new MbWriteResponseMsg();
+   mbWriteResponseMsg->SetOrigin(GetRank());
+   mbWriteResponseMsg->SetDestination(pMailboxWriteMessage->GetOriginalAlp().GetRank());
+   mbWriteResponseMsg->SetTimestamp(pMailboxWriteMessage->GetTimestamp());
+
+   mbWriteResponseMsg->SetIdentifier(pMailboxWriteMessage->GetIdentifier());
+   mbWriteResponseMsg->SetOriginalAlp(pMailboxWriteMessage->GetOriginalAlp());
+   mbWriteResponseMsg->SetWriteStatus(writeStatus);
+   mbWriteResponseMsg->Send(this);
+
+#ifdef SSV_LOCALISATION
+   // Update the access count for state migration
+   fSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(sender),
+                                  fRouter->GetDirectionByLpRank(pMailboxWriteMessage->GetOriginalAlp().GetRank()),
+                                  pMailboxWriteMessage->GetNumberOfHops());
+#endif
 }
 
 
