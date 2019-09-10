@@ -1,25 +1,26 @@
-#include "MbAntiReadMsg.h"
+#include "MbAntiWriteMsg.h"
 
 using namespace pdesmas;
 
-MbAntiReadMsg::MbAntiReadMsg() {
+MbAntiWriteMsg::MbAntiWriteMsg() {
    RegisterClass(GetType(), &CreateInstance);
 }
 
-MbAntiReadMsg::~MbAntiReadMsg() {}
+MbAntiWriteMsg::~MbAntiWriteMsg() {}
 
-pdesmasType MbAntiReadMsg::GetType() const {
-   return MBANTIREADMSG;
+pdesmasType MbAntiWriteMsg::GetType() const {
+   return MBANTIWRITEMSG;
 }
 
-AbstractMessage* MbAntiReadMsg::CreateInstance() {
-   return new MbAntiReadMsg;
+AbstractMessage* MbAntiWriteMsg::CreateInstance() {
+   return new MbAntiWriteMsg;
 }
 
-void MbAntiReadMsg::Serialise(ostream &pOstream) const {
+void MbAntiWriteMsg::Serialise(ostream &pOstream) const {
    pOstream << DELIM_LEFT << GetType();
    pOstream << DELIM_VAR_SEPARATOR << fOrigin;
    pOstream << DELIM_VAR_SEPARATOR << fDestination;
+   pOstream << DELIM_VAR_SEPARATOR << fReceiver;
    pOstream << DELIM_VAR_SEPARATOR << fTimestamp;
    pOstream << DELIM_VAR_SEPARATOR << fMatternColour;
    pOstream << DELIM_VAR_SEPARATOR << fNumberOfHops;
@@ -28,11 +29,13 @@ void MbAntiReadMsg::Serialise(ostream &pOstream) const {
    pOstream << DELIM_RIGHT;
 }
 
-void MbAntiReadMsg::Deserialise(istream &pIstream) {
+void MbAntiWriteMsg::Deserialise(istream &pIstream) {
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fOrigin;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fDestination;
+   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
+   pIstream >> fReceiver;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fTimestamp;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);

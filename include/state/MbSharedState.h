@@ -15,6 +15,7 @@ namespace pdesmas {
     private:
         map<SsvId, MailboxVariable> MailboxVariableMap;
         map<LpId, SsvId> MailboxAgentMap; // map agentid with mailbox variable id
+        map<LpId, vector<tuple<unsigned long, LpId>>> MbWriteMap;
         RangeRoutingTable *RRTable;
         AccessCostCalculator *ACCalculator;
 
@@ -24,6 +25,8 @@ namespace pdesmas {
         MbSharedState();
 
         ~MbSharedState();
+
+        vector<tuple<unsigned long, LpId>> GetMsgToRollback(const LpId &, unsigned long);
 
         void SetRangeRoutingTable(RangeRoutingTable *);
 
@@ -41,7 +44,7 @@ namespace pdesmas {
 
         bool MbValid(const LpId &);
 
-        void WriteMbMsg(const LpId &, const LpId &, unsigned long, const AbstractValue*);
+        bool WriteMbMsg(const LpId &, const LpId &, unsigned long, const AbstractValue*);
 
         SsvId GetMbvId(const LpId &);
 

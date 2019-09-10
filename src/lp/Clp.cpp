@@ -423,18 +423,21 @@ void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
 #endif
 }
 
-
 void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
-   // TODO check if rollback
    const AbstractValue *value = pMailboxWriteMessage->GetValue();
    unsigned long time = pMailboxWriteMessage->GetTimestamp();
    const LpId& sender = pMailboxWriteMessage->GetOriginalAlp();
    WriteStatus writeStatus;
    RollbackList rollbackList;
 
-   fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAlp(),
-                             pMailboxWriteMessage->GetReceiver(), time, value);
-   MbWriteResponseMsg *mbWriteResponseMsg = new MbWriteResponseMsg();
+   if(fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAlp(),
+                             pMailboxWriteMessage->GetReceiver(), time, value)){
+      writeStatus = writeSUCCESS;
+   }else{
+      writeStatus = writeFAILURE;
+      // TODO Receiver Agent RB to ptime, send Anti-Read msg
+   }
+   auto *mbWriteResponseMsg = new MbWriteResponseMsg();
    mbWriteResponseMsg->SetOrigin(GetRank());
    mbWriteResponseMsg->SetDestination(pMailboxWriteMessage->GetOriginalAlp().GetRank());
    mbWriteResponseMsg->SetTimestamp(pMailboxWriteMessage->GetTimestamp());
@@ -450,6 +453,17 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
                                   fRouter->GetDirectionByLpRank(pMailboxWriteMessage->GetOriginalAlp().GetRank()),
                                   pMailboxWriteMessage->GetNumberOfHops());
 #endif
+}
+
+void Clp::ProcessMessage(const MbAntiReadMsg *pMbAntiReadMsg){
+   if(fGVT > pMbAntiReadMsg->GetTimestamp()){
+      LOG(logERROR)<<"";
+      return;
+   }
+
+   RollbackList rollbackList;
+   // fMbSharedState. TODO FINISH ANTI PART
+
 }
 
 

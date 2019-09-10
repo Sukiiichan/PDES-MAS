@@ -25,7 +25,6 @@ namespace pdesmas {
 
         ~MailboxVariable();
 
-
         const SsvId &GetVariableId() const;
 
         unsigned long GetReadUntil() const;
@@ -34,7 +33,7 @@ namespace pdesmas {
 
         const SerialisableList<MbMessage> &GetMessageList() const;
 
-        void AddMbMessage(const AbstractValue *, unsigned long, const LpId &);
+        bool AddMbMessage(const AbstractValue *, unsigned long, const LpId &);
 
         void RemoveMbMessage(unsigned long);
 

@@ -9,6 +9,7 @@
 #include "SingleReadMessage.h"
 #include "MailboxReadMessage.h"
 #include "MailboxWriteMessage.h"
+#include "MbAntiReadMsg.h"
 #include "SsvId.h"
 #include "LpId.h"
 #include "AbstractValue.h"
@@ -42,8 +43,8 @@ namespace pdesmas {
       void ProcessMessage(const WriteAntiMessage*);
 
       void ProcessMessage(const MailboxReadMessage*); // new action msgs
-
       void ProcessMessage(const MailboxWriteMessage*);
+      void ProcessMessage(const MbAntiReadMsg*);
 
       void ProcessMessage(const EndMessage*);
 
