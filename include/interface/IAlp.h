@@ -30,6 +30,8 @@ namespace pdesmas {
 
       void ProcessMessage(const RollbackMessage*);
       void ProcessMessage(const SingleReadResponseMessage*);
+      void ProcessMessage(const MbReadResponseMsg*);
+      void ProcessMessage(const MbWriteResponseMsg*);
       void ProcessMessage(const WriteResponseMessage*);
       void ProcessMessage(const RangeQueryMessage*);
 

@@ -47,3 +47,19 @@ AbstractMessage* HasResponseMessage::GetResponseMessage() const {
   fResponseMessageMutex.Unlock();
   return result;
 }
+
+void HasResponseMessage::SetResponseMessage(const MbReadResponseMsg *pMbReadResponseMsg) {
+   fResponseMessageMutex.Lock();
+   MbReadResponseMsg* copy = new MbReadResponseMsg;
+   *copy = *pMbReadResponseMsg;
+   fResponseMessage=copy;
+   fResponseMessageMutex.Unlock();
+}
+
+void HasResponseMessage::SetResponseMessage(const MbWriteResponseMsg *pMbWriteResponseMsg) {
+   fResponseMessageMutex.Lock();
+   MbWriteResponseMsg* copy = new MbWriteResponseMsg;
+   *copy = *pMbWriteResponseMsg;
+   fResponseMessage = copy;
+   fResponseMessageMutex.Unlock();
+}

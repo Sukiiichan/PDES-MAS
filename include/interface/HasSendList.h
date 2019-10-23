@@ -13,6 +13,8 @@
 #include "SingleReadMessage.h"
 #include "WriteMessage.h"
 #include "RangeQueryMessage.h"
+#include "MailboxReadMessage.h"
+#include "MailboxWriteMessage.h"
 
 namespace pdesmas {
   class HasSendList {
@@ -22,6 +24,8 @@ namespace pdesmas {
     protected:
       void AddToSendList(const SingleReadMessage*);
       void AddToSendList(const WriteMessage*);
+      void AddToSendList(const MailboxReadMessage*);
+      void AddToSendList(const MailboxWriteMessage*);
       void AddToSendList(const RangeQueryMessage*);
       list<SharedStateMessage*> RollbackSendList(unsigned long, const LpId&);
       void ClearSendList(unsigned long);

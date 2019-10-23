@@ -241,7 +241,8 @@ Range *SharedState::RecalculateRange(unsigned long pTime) const {
 void SharedState::RollbackWrite(const SsvId &pSSVID, const LpId &pAgentID, unsigned long pTime,
                                 RollbackList &pRollbackList) {
     if (!ContainsVariable(pSSVID)) {
-        LOG(logERROR) << "SharedState::RollbackWrite# trying to perform a rollback on statevariable that doesn't exist";
+        LOG(logERROR) << "SharedState::RollbackWrite#"
+                         " trying to perform a rollback on statevariable that doesn't exist";
         exit(1);
     }
     map<SsvId, StateVariable>::iterator stateVariableMapIterator = fStateVariableMap.find(pSSVID);

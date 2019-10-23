@@ -13,7 +13,7 @@
 #include "ForwardingTable.h"
 #include "Direction.h"
 #include "SsvId.h"
-
+#include "LpId.h"
 using namespace std;
 
 namespace pdesmas {
@@ -24,12 +24,15 @@ namespace pdesmas {
       map<unsigned int, Direction> fRankToDirectionMap;
       map<Direction, unsigned int> fDirectionToRankMap;
       map<SsvId, Direction> fSSVIDToDirectionMap;
+     map<LpId, SsvId> MailboxAgentMap; // map agentid with mailbox variable id, same as the map in mbsharedstate
 
-    public:
+
+  public:
       RouteTable();
       ~RouteTable();
       RouteTable(unsigned int, unsigned int, const Initialisor*);
 
+      Direction GetDirectionFromMbOwner(const LpId&) const;
       Direction GetDirectionFromSsvId(const SsvId&) const;
       Direction GetDirectionFromRank(unsigned int) const;
       unsigned int GetRankFromDirection(const Direction) const;

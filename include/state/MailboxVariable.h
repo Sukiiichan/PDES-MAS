@@ -6,6 +6,7 @@
 #include <state/AbstractValue.h>
 #include <types/SerialisableList.h>
 #include <state/MbMessage.h>
+#include <vector>
 
 using namespace std;
 namespace pdesmas {
@@ -38,6 +39,12 @@ namespace pdesmas {
         void RemoveMbMessage(unsigned long);
 
         void RemoveOldMessage(unsigned long);
+
+        void PeformReadRB(const LpId&, unsigned long);
+
+        void PerformWriteRB(const LpId&);
+
+        vector<pair<LpId, unsigned long>> GetRbList(unsigned long);
 
         AbstractValue *ReadMb(const LpId &, unsigned long);
 

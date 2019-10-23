@@ -109,4 +109,19 @@ add_library(PDESMAS SHARED
         src/util/Log.cpp
         src/util/Mutex.cpp
         src/util/Semaphore.cpp
-        src/util/Thread.cpp include/state/MbMessage.h src/state/MbMessage.cpp src/state/MailboxVariable.cpp src/state/MbSharedState.cpp src/messages/MailboxWriteMessage.cpp include/messages/MbReadResponseMsg.h src/messages/MbReadResponseMsg.cpp include/messages/content/HasReceiver.h src/messages/content/HasReceiver.cpp include/messages/MbAntiReadMsg.h include/messages/MbWriteResponseMsg.h src/messages/MbWriteResponseMsg.cpp src/messages/MbAntiReadMsg.cpp include/messages/MbAntiWriteMsg.h src/messages/MbAntiWriteMsg.cpp)
+        src/util/Thread.cpp
+        include/state/MbMessage.h
+        src/state/MbMessage.cpp
+        src/state/MailboxVariable.cpp
+        src/state/MbSharedState.cpp
+        src/messages/MailboxWriteMessage.cpp
+        include/messages/MbReadResponseMsg.h
+        src/messages/MbReadResponseMsg.cpp
+        include/messages/content/HasReceiver.h
+        src/messages/content/HasReceiver.cpp
+        include/messages/MbAntiReadMsg.h
+        include/messages/MbWriteResponseMsg.h
+        src/messages/MbWriteResponseMsg.cpp
+        src/messages/MbAntiReadMsg.cpp
+        include/messages/MbAntiWriteMsg.h
+        src/messages/MbAntiWriteMsg.cpp)

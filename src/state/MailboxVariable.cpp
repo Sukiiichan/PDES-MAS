@@ -38,6 +38,27 @@ const SerialisableList<MbMessage> &MailboxVariable::GetMessageList() const {
 
 // AddMsgList
 
+void MailboxVariable::PeformReadRB(const LpId & pSender, unsigned long pTime) {
+   // TODO del read list & modify mails in mbv
+   if(pTime > readUntil){
+      LOG(logERROR) << "";
+      exit(0);
+   }
+   auto MbvIterator = messageList.begin();
+   while(MbvIterator != messageList.end()){
+      if(MbvIterator->GetTime()>=pTime){
+         // ? may no need to perform actions
+      } else{
+         MbvIterator++;
+      }
+   }
+   readUntil = pTime;
+}
+
+void MailboxVariable::PerformWriteRB(const LpId &) {
+
+}
+
 bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender) {
    if (pTime >= readUntil) {
       auto mbMessageIterator = messageList.begin();
@@ -45,8 +66,12 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
       while (mbMessageIterator != messageList.end()) {
          if (mbMessageIterator->GetTime() > pTime) {
             messageList.insert(mbMessageIterator, newMsg);
+            // adding of write records done in MbSS
             break;
-         } else {
+         }else if(mbMessageIterator->GetTime() == pTime){
+            // TODO might no need to RB
+         }
+         else {
             ++mbMessageIterator;
          }
       }
@@ -93,11 +118,28 @@ void MailboxVariable::RemoveOldMessage(unsigned long pTime) {
    }
 }
 
+vector<pair<LpId, unsigned long>> MailboxVariable::GetRbList(unsigned long pTime) {
+   vector<pair<LpId, unsigned long>> result;
+   if(pTime >= readUntil){
+      LOG(logERROR) << "no need to perform rollback";
+      exit(0);
+   }
+   auto mbMessageIterator = messageList.begin();
+   while(mbMessageIterator->GetTime()!=readUntil){
+      if(mbMessageIterator->GetTime()<pTime){
+         mbMessageIterator ++;
+      } else{
+         result.emplace_back(mbMessageIterator->GetSender(),mbMessageIterator->GetTime());
+      }
+   }
+   return result;
+}
+
 AbstractValue *MailboxVariable::ReadMb(const LpId &reqAgent, unsigned long reqTime) {
    if (reqAgent.GetId() == ownerAgent.GetId()) {
       // or check map
       if (reqTime >= readUntil && reqTime <= messageList.end()->GetTime()) {
-         SerialisableList<MbMessage>::iterator mbMessageIterator = messageList.begin();
+         auto mbMessageIterator = messageList.begin();
          while (mbMessageIterator != messageList.end()) {
             if (mbMessageIterator->GetTime() < reqTime) {
                ++mbMessageIterator;

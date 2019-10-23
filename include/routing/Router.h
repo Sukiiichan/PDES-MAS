@@ -43,6 +43,12 @@
 #include "WriteResponseMessage.h"
 #include "GvtControlMessage.h"
 #include "GvtValueMessage.h"
+#include "MailboxReadMessage.h"
+#include "MailboxWriteMessage.h"
+#include "MbAntiReadMsg.h"
+#include "MbAntiWriteMsg.h"
+#include "MbReadResponseMsg.h"
+#include "MbWriteResponseMsg.h"
 
 using namespace std;
 
@@ -68,6 +74,12 @@ namespace pdesmas {
       bool Route(WriteAntiMessage*);
       bool Route(WriteMessage*);
       bool Route(WriteResponseMessage*);
+      bool Route(MailboxReadMessage*);
+      bool Route(MailboxWriteMessage*);
+      bool Route(MbReadResponseMsg*);
+      bool Route(MbWriteResponseMsg*);
+      bool Route(MbAntiReadMsg*);
+      bool Route(MbAntiWriteMsg*);
 
       unsigned int GetLpRankByDirection(Direction) const;
       Direction GetDirectionByLpRank(unsigned int) const;

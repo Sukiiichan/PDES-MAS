@@ -30,6 +30,7 @@ list<SharedStateMessage*> HasSendList::RollbackSendList(unsigned long pTime,
         }
       }
         break;
+      // TODO see if need to complete
       case WRITEMESSAGE: {
         WriteMessage* writeMessage = static_cast<WriteMessage*> (*iter);
         // Note, again, I don't need to rollback the write message from the previous step, so no equals sign here!
@@ -92,4 +93,16 @@ void HasSendList::AddToSendList(const RangeQueryMessage* pRangeQueryMessage) {
   RangeQueryMessage* copyMessage = new RangeQueryMessage;
   *copyMessage = *pRangeQueryMessage;
   fSendList.push_back(copyMessage);
+}
+
+void HasSendList::AddToSendList(const MailboxReadMessage *pMailboxReadMessage) {
+   MailboxReadMessage* copyMessage = new MailboxReadMessage;
+   *copyMessage = *pMailboxReadMessage;
+   fSendList.push_back(copyMessage);
+}
+
+void HasSendList::AddToSendList(const MailboxWriteMessage *pMailboxWriteMessage) {
+   MailboxWriteMessage* copyMessage = new MailboxWriteMessage;
+   *copyMessage = *pMailboxWriteMessage;
+   fSendList.push_back(copyMessage);
 }

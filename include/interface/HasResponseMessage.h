@@ -12,6 +12,8 @@
 #include "RollbackMessage.h"
 #include "SingleReadResponseMessage.h"
 #include "WriteResponseMessage.h"
+#include "MbReadResponseMsg.h"
+#include "MbWriteResponseMsg.h"
 #include "RangeQueryMessage.h"
 #include "Mutex.h"
 
@@ -26,6 +28,8 @@ namespace pdesmas {
       void SetResponseMessage(const RollbackMessage*);
       void SetResponseMessage(const SingleReadResponseMessage*);
       void SetResponseMessage(const WriteResponseMessage*);
+      void SetResponseMessage(const MbReadResponseMsg*);
+      void SetResponseMessage(const MbWriteResponseMsg*);
       void SetResponseMessage(const RangeQueryMessage*);
   };
 }

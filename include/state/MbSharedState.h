@@ -6,6 +6,7 @@
 #include <state/SsvId.h>
 #include <lp/LpId.h>
 #include <map>
+#include <vector>
 #include <lp/AccessCostCalculator.h>
 #include "MailboxVariable.h"
 
@@ -49,6 +50,12 @@ namespace pdesmas {
         SsvId GetMbvId(const LpId &);
 
         AbstractValue *Read(const LpId &, unsigned long);
+
+        void RollbackRead(const LpId&, unsigned long, RollbackList);
+
+        void RollbackWrite();
+
+        RollbackList GetRollbacklist(const LpId&, unsigned long);
 
         void RemoveMbMessages(unsigned long);
 

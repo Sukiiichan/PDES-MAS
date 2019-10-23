@@ -104,3 +104,12 @@ void RouteTable::SetSsvIdHost(SsvId pSSVID, Direction pDirection) {
   fSSVIDToDirectionMap[pSSVID] = pDirection;
 }
 
+Direction RouteTable::GetDirectionFromMbOwner(const pdesmas::LpId & pOwner) const {
+   SsvId mbvId = MailboxAgentMap.find(pOwner)->second;
+   auto directionMapIterator = fSSVIDToDirectionMap.find(mbvId);
+   if(directionMapIterator != fSSVIDToDirectionMap.end()){
+      return directionMapIterator->second;
+   }
+   LOG(logERROR) <<""<<pOwner;
+   return DIRECTION_SIZE;
+}

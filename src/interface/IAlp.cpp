@@ -88,6 +88,34 @@ void IAlp::Send() {
       case WRITEANTIMESSAGE :
         PreProcessSendMessage(static_cast<WriteAntiMessage*> (message));
         break;
+       case MAILBOXREADMESSAGE:{
+          MailboxReadMessage* mailboxReadMessage = static_cast<MailboxReadMessage*>(message);
+          AddToSendList(mailboxReadMessage);
+          PreProcessSendMessage(mailboxReadMessage);
+       }
+          break;
+       case MBREADRESPONSEMSG:{
+          PreProcessSendMessage(static_cast<MbReadResponseMsg*> (message));
+       }
+          break;
+       case MBANTIREADMSG:{
+          PreProcessSendMessage(static_cast<MbAntiReadMsg*> (message));
+       }
+          break;
+       case MAILBOXWRITEMESSAGE:{
+          MailboxWriteMessage* mailboxwriteMessage = static_cast<MailboxWriteMessage*>(message);
+          AddToSendList(mailboxwriteMessage);
+          PreProcessSendMessage(mailboxwriteMessage);
+       }
+          break;
+       case MBWRITERESPONSEMSG:{
+          PreProcessSendMessage(static_cast<MbWriteResponseMsg*> (message));
+       }
+          break;
+       case MBANTIWRITEMSG:{
+          PreProcessSendMessage(static_cast<MbAntiWriteMsg*> (message));
+       }
+          break;
       case RANGEQUERYMESSAGE: {
         RangeQueryMessage* rangeQueryMessage = static_cast<RangeQueryMessage*>(message);
         AddToSendList(rangeQueryMessage);
@@ -128,6 +156,18 @@ void IAlp::Receive() {
       ProcessMessage(writeResponseMessage);
     }
       break;
+     case MBREADRESPONSEMSG:{
+        MbReadResponseMsg* mbReadResponseMsg = static_cast<MbReadResponseMsg*>(message);
+        PreProcessReceiveMessage(mbReadResponseMsg);
+        ProcessMessage(mbReadResponseMsg);
+     }
+        break;
+     case MBWRITERESPONSEMSG:{
+        MbWriteResponseMsg* mbWriteResponseMsg = static_cast<MbWriteResponseMsg*>(message);
+        PreProcessReceiveMessage(mbWriteResponseMsg);
+        ProcessMessage(mbWriteResponseMsg);
+     }
+        break;
     case RANGEQUERYMESSAGE: {
       RangeQueryMessage* rangeQueryMessage = static_cast<RangeQueryMessage*>(message);
       PreProcessReceiveMessage(rangeQueryMessage);
@@ -285,6 +325,7 @@ void IAlp::ProcessMessage(const RangeQueryMessage* pRangeQueryMessage) {
 
 bool IAlp::ProcessRollback(const RollbackMessage* pRollbackMessage) {
   // Check if agent ID has been stored in LVT map
+  // TODO check if can add mb stuff
   if (!fIAgent->HasAgentID(pRollbackMessage->GetOriginalAlp().GetId())) {
     LOG(logERROR)
     << "IAlp::ProcessRollback(" << GetRank()
@@ -440,4 +481,61 @@ void IAlp::Finalise() {
   fMPIInterface->StopSimulation();
   if (fIAgent->HasResponseMessageWaiting()) fIAgent->SignalResponse();
   fMPIInterface->Join();
+}
+
+void IAlp::ProcessMessage(const MbReadResponseMsg *pMbReadResponseMsg) {
+   if(CheckIgnoreID(pMbReadResponseMsg->GetIdentifier())){
+      LOG(logFINEST)
+         << "IALP::Receive(" << GetRank()
+         << ")# Response message ignored, message: "
+         << *pMbReadResponseMsg;
+      return;
+   }
+   fIAgent->Lock();
+   fIAgent->SetResponseMessage(pMbReadResponseMsg);
+   fIAgent->Unlock();
+   fPreResponseSemaphore.Wait();
+   fIAgent->Lock();
+   if (!fIAgent->SignalResponse(pMbReadResponseMsg->GetIdentifier(),
+                                pMbReadResponseMsg->GetOriginalAlp().GetId())) {
+      LOG(logWARNING)
+         << "IAlp::ProcessMbReadResponseMsg(" << GetRank()
+         << ")# Ignoring message with unsuccessful signal response: "
+         << *pMbReadResponseMsg;
+      fIAgent->Unlock();
+      return;
+   }
+   fIAgent->Unlock();
+   fReceiveProcessSemaphore.Wait();
+   fIAgent->Lock();
+   fIAgent->SignalPostReceive();
+   fIAgent->Unlock();
+}
+
+void IAlp::ProcessMessage(const MbWriteResponseMsg *pMbWriteResponseMsg) {
+   if (CheckIgnoreID(pMbWriteResponseMsg->GetIdentifier())) {
+      LOG(logFINEST)
+         << "IALP::Receive(" << GetRank()
+         << ")# Response message ignored, message: " << *pMbWriteResponseMsg;
+      return;
+   }
+   fIAgent->Lock();
+   fIAgent->SetResponseMessage(pMbWriteResponseMsg);
+   fIAgent->Unlock();
+   fPreResponseSemaphore.Wait();
+   fIAgent->Lock();
+   if (!fIAgent->SignalResponse(pMbWriteResponseMsg->GetIdentifier(),
+                                pMbWriteResponseMsg->GetOriginalAlp().GetId())) {
+      LOG(logWARNING)
+         << "IAlp::ProcessMbWriteResponseMsg(" << GetRank()
+         << ")# Ignoring message with unsuccessful signal response: "
+         << *pMbWriteResponseMsg;
+      fIAgent->Unlock();
+      return;
+   }
+   fIAgent->Unlock();
+   fReceiveProcessSemaphore.Wait();
+   fIAgent->Lock();
+   fIAgent->SignalPostReceive();
+   fIAgent->Unlock();
 }
