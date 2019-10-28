@@ -36,19 +36,17 @@ namespace pdesmas {
 
         bool AddMbMessage(const AbstractValue *, unsigned long, const LpId &);
 
-        void RemoveMbMessage(unsigned long);
+        bool RemoveMbMessage(const LpId&, unsigned long);
 
         void RemoveOldMessage(unsigned long);
 
         void PeformReadRB(const LpId&, unsigned long);
 
-        void PerformWriteRB(const LpId&);
+        void PerformWriteRB(const LpId&, unsigned long);
 
         vector<pair<LpId, unsigned long>> GetRbList(unsigned long);
 
         AbstractValue *ReadMb(const LpId &, unsigned long);
-
-        // TODO rollback functions
 
         void Serialise(ostream &) const;
 

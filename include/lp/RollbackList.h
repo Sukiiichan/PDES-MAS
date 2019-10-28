@@ -18,6 +18,7 @@ class Lp;
     void AddLp(const LpId&, unsigned long);
     void SendRollbacks(Lp*, const RollbackTag&);
     void SendRollbacksAfterStateMigration(Lp*, const RollbackTag&);
+
   };
 }
 #endif

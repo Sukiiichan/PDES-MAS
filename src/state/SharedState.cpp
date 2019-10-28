@@ -128,14 +128,12 @@ AbstractValue *SharedState::Read(const SsvId &pSSVID, const LpId &pAgentID, unsi
         exit(1);
     }
 //    else if (fMailboxStateVariableMap.find(pSSVID) != fMailboxStateVariableMap.end()) {
-//        // TODO check if needed
 //        LOG(logERROR) << "SharedState::Read# trying to perform a read on mailbox";
 //        exit(1);}
     return fStateVariableMap.find(pSSVID)->second.Read(pAgentID, pTime);
 }
 
 //AbstractValue *SharedState::ReadMb(const SsvId &pSSVID, const LpId &pAgentID, unsigned long pTime) {
-//    //  TODO rewrite
 //    if (!ContainsVariable(pSSVID)) {
 //        LOG(logERROR) << "SharedState:ReadMb# trying to perform a read on state variable that doesn't exist";
 //        exit(1);

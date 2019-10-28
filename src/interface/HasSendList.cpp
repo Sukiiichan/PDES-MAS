@@ -30,7 +30,6 @@ list<SharedStateMessage*> HasSendList::RollbackSendList(unsigned long pTime,
         }
       }
         break;
-      // TODO see if need to complete
       case WRITEMESSAGE: {
         WriteMessage* writeMessage = static_cast<WriteMessage*> (*iter);
         // Note, again, I don't need to rollback the write message from the previous step, so no equals sign here!
@@ -44,6 +43,30 @@ list<SharedStateMessage*> HasSendList::RollbackSendList(unsigned long pTime,
         }
       }
         break;
+       case MAILBOXREADMESSAGE:{
+         MailboxReadMessage* mailboxReadMessage = static_cast<MailboxReadMessage*>(*iter);
+          if (mailboxReadMessage->GetOriginalAlp() == pOriginalAlp && mailboxReadMessage->GetTimestamp() >= pTime) {
+             MailboxReadMessage* copyMessage = new MailboxReadMessage;
+             *copyMessage = *mailboxReadMessage;
+             result.push_back(copyMessage);
+             delete *iter;
+             iter = fSendList.erase(iter);
+             continue;
+          }
+       }
+          break;
+       case MAILBOXWRITEMESSAGE:{
+          MailboxWriteMessage* mailboxWriteMessage = static_cast<MailboxWriteMessage*> (*iter);
+          if (mailboxWriteMessage->GetOriginalAlp() == pOriginalAlp && mailboxWriteMessage->GetTimestamp() > pTime) {
+             MailboxWriteMessage* copyMessage = new MailboxWriteMessage;
+             *copyMessage = *mailboxWriteMessage;
+             result.push_back(copyMessage);
+             delete *iter;
+             iter = fSendList.erase(iter);
+             continue;
+          }
+       }
+          break;
       case RANGEQUERYMESSAGE: {
         RangeQueryMessage* rangeQueryMessage = static_cast<RangeQueryMessage*> (*iter);
         if (rangeQueryMessage->GetOriginalAlp() == pOriginalAlp && rangeQueryMessage->GetTimestamp() >= pTime) {

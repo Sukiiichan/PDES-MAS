@@ -15,6 +15,8 @@
 #endif
 #include "SingleReadAntiMessage.h"
 #include "WriteAntiMessage.h"
+#include "MbAntiReadMsg.h"
+#include "MbAntiWriteMsg.h"
 
 IAlp::IAlp(unsigned int pRank, unsigned int pCommSize,
     unsigned int pNumberOfClps, unsigned int pNumberOfAlps,
@@ -325,7 +327,6 @@ void IAlp::ProcessMessage(const RangeQueryMessage* pRangeQueryMessage) {
 
 bool IAlp::ProcessRollback(const RollbackMessage* pRollbackMessage) {
   // Check if agent ID has been stored in LVT map
-  // TODO check if can add mb stuff
   if (!fIAgent->HasAgentID(pRollbackMessage->GetOriginalAlp().GetId())) {
     LOG(logERROR)
     << "IAlp::ProcessRollback(" << GetRank()
@@ -402,6 +403,30 @@ bool IAlp::ProcessRollback(const RollbackMessage* pRollbackMessage) {
           antiWriteMessage->Send(this);
         }
           break;
+         case MAILBOXREADMESSAGE:{
+            MailboxReadMessage* mailboxReadMessage = static_cast<MailboxReadMessage*>(*iter);
+            MbAntiReadMsg* mbAntiReadMsg = new MbAntiReadMsg();
+            mbAntiReadMsg->SetOrigin(GetRank());
+            mbAntiReadMsg->SetDestination(GetParentClp());
+            mbAntiReadMsg->SetTimestamp(mailboxReadMessage->GetTimestamp());
+            mbAntiReadMsg->SetNumberOfHops(0);
+            mbAntiReadMsg->SetRollbackTag(pRollbackMessage->GetRollbackTag());
+            mbAntiReadMsg->SetOriginalAlp(mailboxReadMessage->GetOriginalAlp());
+            mbAntiReadMsg->Send(this);
+         }
+            break;
+         case MAILBOXWRITEMESSAGE:{
+            MailboxWriteMessage* mailboxWriteMessage = static_cast<MailboxWriteMessage*>(*iter);
+            MbAntiWriteMsg* mbAntiWriteMsg = new MbAntiWriteMsg();
+            mbAntiWriteMsg->SetOrigin(GetRank());
+            mbAntiWriteMsg->SetDestination(GetParentClp());
+            mbAntiWriteMsg->SetTimestamp(mailboxWriteMessage->GetTimestamp());
+            mbAntiWriteMsg->SetNumberOfHops(0);
+            mbAntiWriteMsg->SetRollbackTag(pRollbackMessage->GetRollbackTag());
+            mbAntiWriteMsg->SetOriginalAlp(mailboxWriteMessage->GetOriginalAlp());
+            mbAntiWriteMsg->Send(this);
+         }
+            break;
         case RANGEQUERYMESSAGE : {
           RangeQueryMessage* rangeQueryMessage = static_cast<RangeQueryMessage*> (*iter);
           RangeQueryAntiMessage* antiRangeQueryMessage = new RangeQueryAntiMessage();

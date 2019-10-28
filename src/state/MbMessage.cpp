@@ -31,7 +31,6 @@ MbMessage::~MbMessage() { //
 // operations on single msg
 
 AbstractValue* MbMessage::Read(unsigned long pTime) {
-    // TODO if add Agent Id limit
     return GetValueCopy();
 }
 

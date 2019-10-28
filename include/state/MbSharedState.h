@@ -53,7 +53,7 @@ namespace pdesmas {
 
         void RollbackRead(const LpId&, unsigned long, RollbackList);
 
-        void RollbackWrite();
+        void RollbackWrite(const LpId&, unsigned long, RollbackList);
 
         RollbackList GetRollbacklist(const LpId&, unsigned long);
 

@@ -38,25 +38,28 @@ const SerialisableList<MbMessage> &MailboxVariable::GetMessageList() const {
 
 // AddMsgList
 
-void MailboxVariable::PeformReadRB(const LpId & pSender, unsigned long pTime) {
-   // TODO del read list & modify mails in mbv
+void MailboxVariable::PeformReadRB(const LpId & pOwner, unsigned long pTime) {
    if(pTime > readUntil){
       LOG(logERROR) << "";
       exit(0);
+   }else if(pOwner!=ownerAgent){
+      LOG(logERROR) << "";
+      exit(0);
    }
-   auto MbvIterator = messageList.begin();
-   while(MbvIterator != messageList.end()){
-      if(MbvIterator->GetTime()>=pTime){
-         // ? may no need to perform actions
-      } else{
-         MbvIterator++;
-      }
-   }
+//   auto MbvIterator = messageList.begin();
+//   while(MbvIterator != messageList.end()){
+//      if(MbvIterator->GetTime()>=pTime){
+//         // ? may no need to perform actions
+//      } else{
+//         MbvIterator++;
+//      }
+//   }
    readUntil = pTime;
 }
 
-void MailboxVariable::PerformWriteRB(const LpId &) {
-
+void MailboxVariable::PerformWriteRB(const LpId &pSender, unsigned long pTime) {
+   RemoveMbMessage(pSender,pTime);
+   // TODO may handle RB
 }
 
 bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender) {
@@ -68,9 +71,9 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
             messageList.insert(mbMessageIterator, newMsg);
             // adding of write records done in MbSS
             break;
-         }else if(mbMessageIterator->GetTime() == pTime){
-            // TODO might no need to RB
          }
+         // else if(mbMessageIterator->GetTime() == pTime){
+         // }
          else {
             ++mbMessageIterator;
          }
@@ -86,13 +89,15 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
    }
 }
 
-void MailboxVariable::RemoveMbMessage(unsigned long pTime) {
+bool MailboxVariable::RemoveMbMessage(const LpId& pSender, unsigned long pTime) {
    LOG(logFINEST) << "MailboxVariable::RemoveMbMessage# Remove message sent at " << pTime;
    SerialisableList<MbMessage>::iterator mbMessageIterator = messageList.begin();
    while (mbMessageIterator != messageList.end()) {
       if (mbMessageIterator->GetTime() == pTime) {
          if (pTime < readUntil) {
-            // TODO possible RB
+            return false;
+         }else if(mbMessageIterator->GetSender()!=pSender){
+            ++mbMessageIterator;
          }
          mbMessageIterator = messageList.erase(mbMessageIterator);
          break;
@@ -105,6 +110,7 @@ void MailboxVariable::RemoveMbMessage(unsigned long pTime) {
    if (messageList.end()->GetTime() == pTime) {
       messageList.erase(messageList.end());
    }
+   return true;
 }
 
 void MailboxVariable::RemoveOldMessage(unsigned long pTime) {
@@ -157,7 +163,6 @@ AbstractValue *MailboxVariable::ReadMb(const LpId &reqAgent, unsigned long reqTi
    }
    exit(1);
 }
-
 
 void MailboxVariable::Serialise(ostream &pOstream) const {
    pOstream << DELIM_LEFT << mbVariableID;

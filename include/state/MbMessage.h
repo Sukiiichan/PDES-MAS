@@ -26,8 +26,6 @@ namespace pdesmas {
 
         ~ MbMessage();
 
-// TODO add more needed functions
-
         AbstractValue *Read(unsigned long);
         // void DelOldMsg(unsigned long, unsigned long); // delete old message to recycle memory space
         // void RemoveMsg(unsigned long, const LpId &);

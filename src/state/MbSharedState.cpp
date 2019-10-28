@@ -75,7 +75,6 @@ void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariab
    }
    const LpId &pAgent = pMbVariable.GetOwnerAgent();
    MailboxVariableMap[pSsvId] = MailboxVariable(pSsvId, pAgent);
-   // TODO MAMap del old
 }
 
 void MbSharedState::Delete(const SsvId &) {}
@@ -89,20 +88,31 @@ AbstractValue *MbSharedState::Read(const LpId &pAgent, unsigned long pTime) {
    return MailboxVariableMap.find(fSsvId)->second.ReadMb(pAgent, pTime);
 }
 
-void MbSharedState::RollbackRead(const LpId &, unsigned long pTime, RollbackList pRollbackList) {
+void MbSharedState::RollbackRead(const LpId &pOwner, unsigned long pTime, RollbackList pRollbackList) {
    // rollbacks reads that shouldnt happen
-
+   SsvId mbvId = MailboxAgentMap.find(pOwner)->second;
+   MailboxVariable mbv = MailboxVariableMap.find(mbvId)->second;
+   mbv.PeformReadRB(pOwner, pTime);
 }
 
 
-void MbSharedState::RollbackWrite() {
+void MbSharedState::RollbackWrite(const LpId & pOwner, unsigned long pTime, RollbackList pRollbackList) {
+   SsvId mbvId = MailboxAgentMap.find(pOwner)->second;
+   unsigned long readUntil = MailboxVariableMap.find(mbvId)->second.GetReadUntil();
 
+   auto writeLogIterator = MbWriteMap.find(pOwner)->second.begin();
+   while(writeLogIterator != MbWriteMap.find(pOwner)->second.end()){
+      if(get<0>(*writeLogIterator) > pTime){
+         SsvId mbvId = MailboxAgentMap.find(get<1>(*writeLogIterator))->second;
+         MailboxVariableMap.find(mbvId)->second.PerformWriteRB(pOwner, pTime);
+      }
+      writeLogIterator ++;
+   }
 }
 
 void MbSharedState::RemoveMessageList(const SsvId &, RollbackList &) {}
 
 vector<tuple<unsigned long, LpId>> MbSharedState::GetMsgToRollback(const LpId &pAgent, unsigned long readUntil) {
-   // TODO return msg and agent influenced by rollback
    auto mbWriteMapIterator = MbWriteMap.find(pAgent);
    list<tuple<unsigned long, LpId>> result;
 
