@@ -108,8 +108,8 @@ void Router::SetSsvIdDirection(SsvId SsvID, Direction pDirection) {
 }
 
 bool Router::Route(MailboxReadMessage *pMailboxReadMessage) {
-   const LpId &pOwner = pMailboxReadMessage->GetOriginalAlp();
-   Direction direction = fRouteTable.GetDirectionFromMbOwner(pOwner);
+   const unsigned long pOwnerId = pMailboxReadMessage->GetMbOwnerId();
+   Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
       LOG(logERROR)<<""<<*pMailboxReadMessage;
       exit(1);
@@ -122,8 +122,8 @@ bool Router::Route(MailboxReadMessage *pMailboxReadMessage) {
 }
 
 bool Router::Route(MailboxWriteMessage *pMailboxWriteMessage) {
-   const LpId &pOwner = pMailboxWriteMessage->GetReceiver();
-   Direction direction = fRouteTable.GetDirectionFromMbOwner(pOwner);
+   const unsigned long pOwnerId = pMailboxWriteMessage->GetMbOwnerId();
+   Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
       LOG(logERROR)<<""<<*pMailboxWriteMessage;
       exit(1);
@@ -136,8 +136,8 @@ bool Router::Route(MailboxWriteMessage *pMailboxWriteMessage) {
 }
 
 bool Router::Route(MbAntiReadMsg *pMbAntiReadMsg) {
-   const LpId &pOwner = pMbAntiReadMsg->GetOriginalAlp();
-   Direction direction = fRouteTable.GetDirectionFromMbOwner(pOwner);
+   const unsigned long pOwnerId = pMbAntiReadMsg->GetMbOwnerId();
+   Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
       LOG(logERROR)<<""<<*pMbAntiReadMsg;
       exit(1);
@@ -150,8 +150,8 @@ bool Router::Route(MbAntiReadMsg *pMbAntiReadMsg) {
 }
 
 bool Router::Route(MbAntiWriteMsg *pMbAntiWriteMsg) {
-   const LpId &pOwner = pMbAntiWriteMsg->GetOriginalAlp();
-   Direction direction = fRouteTable.GetDirectionFromMbOwner(pOwner);
+   const unsigned long pOwnerId = pMbAntiWriteMsg->GetMbOwnerId();
+   Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
       LOG(logERROR)<<""<<*pMbAntiWriteMsg;
       exit(1);

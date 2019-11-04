@@ -15,11 +15,12 @@ namespace pdesmas {
     class MbSharedState {
     private:
         map<SsvId, MailboxVariable> MailboxVariableMap;
-        map<LpId, SsvId> MailboxAgentMap; // map agentid with mailbox variable id
-        map<LpId, vector<tuple<unsigned long, LpId>>> MbWriteMap;
+        map<unsigned long , SsvId> MailboxAgentMap; // map agentid with mailbox variable id
+        map<LpId, vector<tuple<unsigned long,  unsigned long >>> MbWriteMap;
+        // map<sender,vector(tuple(time,receiver))>
         RangeRoutingTable *RRTable;
         AccessCostCalculator *ACCalculator;
-
+        map<unsigned long,int> fAgentIdToRankMap;
         bool ContainsVariable(const SsvId &);
 
     public:
@@ -35,7 +36,7 @@ namespace pdesmas {
 
         void UpdateAccessCount(const SsvId &, Direction, unsigned long);
 
-        void Add(const SsvId &, unsigned long, const LpId &);
+        void Add(const SsvId &pSsvId, unsigned long pTime, const LpId &pAgent);
 
         void Insert(const SsvId &, const MailboxVariable &, RollbackList &);
 
@@ -43,23 +44,27 @@ namespace pdesmas {
 
         MailboxVariable GetCopy(const SsvId &);
 
-        bool MbValid(const LpId &);
+        bool MbValid(const unsigned long pOwnerId);
 
-        bool WriteMbMsg(const LpId &, const LpId &, unsigned long, const AbstractValue*);
+        bool WriteMbMsg(const LpId &pSender, const unsigned long pReceiverId, unsigned long pTime,
+                        const AbstractValue *pValue);
 
-        SsvId GetMbvId(const LpId &);
+        SsvId GetMbvId(const unsigned long pSenderId);
 
-        AbstractValue *Read(const LpId &, unsigned long);
+        AbstractValue *Read(const unsigned long pOwnerId, unsigned long pTime);
 
-        void RollbackRead(const LpId&, unsigned long, RollbackList);
+        void RollbackRead(const unsigned long pOwnerId, unsigned long pTime, RollbackList pRollbackList);
 
-        void RollbackWrite(const LpId&, unsigned long, RollbackList);
+        void RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime,
+                           RollbackList pRollbackList);
 
         RollbackList GetRollbacklist(const LpId&, unsigned long);
 
         void RemoveMbMessages(unsigned long);
 
         void RemoveMessageList(const SsvId &, RollbackList &);
+
+        int GetRankFromAgentId(unsigned long agentId);
     };
 }
 

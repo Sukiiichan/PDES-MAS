@@ -2,10 +2,10 @@
 #define PDES_MAS_MBANTIWRITEMSG_H
 
 #include "AntiMessage.h"
-#include "HasReceiver.h"
+#include "HasMBOwnerID.h"
 
 namespace pdesmas{
-   class MbAntiWriteMsg:public AntiMessage,public HasReceiver{
+   class MbAntiWriteMsg:public AntiMessage,public HasMBOwnerID{
    private:
       static AbstractMessage* CreateInstance();
 

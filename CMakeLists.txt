@@ -117,8 +117,8 @@ add_library(PDESMAS SHARED
         src/messages/MailboxWriteMessage.cpp
         include/messages/MbReadResponseMsg.h
         src/messages/MbReadResponseMsg.cpp
-        include/messages/content/HasReceiver.h
-        src/messages/content/HasReceiver.cpp
+        include/messages/content/HasMBOwnerID.h
+        src/messages/content/HasMBOwnerID.cpp
         include/messages/MbAntiReadMsg.h
         include/messages/MbWriteResponseMsg.h
         src/messages/MbWriteResponseMsg.cpp

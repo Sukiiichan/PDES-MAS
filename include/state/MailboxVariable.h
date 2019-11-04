@@ -13,6 +13,7 @@ namespace pdesmas {
     class MailboxVariable : public Serialisable {
     private:
         SsvId mbVariableID;
+        unsigned long  ownerAgentId;
         LpId ownerAgent;
         SerialisableList<MbMessage> messageList;
         unsigned long readUntil;
@@ -20,7 +21,7 @@ namespace pdesmas {
     public:
         MailboxVariable();
 
-        MailboxVariable(const SsvId &, const LpId &);
+        MailboxVariable(const SsvId &pSsvId, const LpId &pAgent);
 
         MailboxVariable(const MailboxVariable &);
 
@@ -30,7 +31,7 @@ namespace pdesmas {
 
         unsigned long GetReadUntil() const;
 
-        const LpId & GetOwnerAgent() const;
+        const unsigned long GetOwnerAgentId() const;
 
         const SerialisableList<MbMessage> &GetMessageList() const;
 
@@ -40,13 +41,13 @@ namespace pdesmas {
 
         void RemoveOldMessage(unsigned long);
 
-        void PeformReadRB(const LpId&, unsigned long);
+        void PeformReadRB(const unsigned long pOwnerId, unsigned long pTime);
 
-        void PerformWriteRB(const LpId&, unsigned long);
+        void PerformWriteRB(const LpId &pSender, unsigned long pTime, RollbackList pRollbackList);
 
         vector<pair<LpId, unsigned long>> GetRbList(unsigned long);
 
-        AbstractValue *ReadMb(const LpId &, unsigned long);
+        AbstractValue *ReadMb(const unsigned long reqAgentId, unsigned long reqTime);
 
         void Serialise(ostream &) const;
 

@@ -492,7 +492,7 @@ void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
                   << *pMailboxReadMessage;
 
    LpId sender = pMailboxReadMessage->GetOriginalAlp();
-   if (!fMbSharedState.MbValid(sender)) {
+   if (!fMbSharedState.MbValid(sender.GetId())) {
       LOG(logERROR) << "no mailbox record";
       exit(0);
    }
@@ -501,7 +501,7 @@ void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
    unsigned int dstClp = pMailboxReadMessage->GetDestination();
    unsigned long reqTime = pMailboxReadMessage->GetTimestamp();
 
-   AbstractValue *value = fMbSharedState.Read(sender, reqTime);
+   AbstractValue *value = fMbSharedState.Read(sender.GetId(), reqTime);
 
    MbReadResponseMsg *mbReadResponseMsg = new MbReadResponseMsg();
    mbReadResponseMsg->SetOrigin(GetRank());
@@ -515,7 +515,7 @@ void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
 #ifdef SSV_LOCALISATION
    // Update access count for state migration
    fMbSharedState.UpdateAccessCount(
-         fMbSharedState.GetMbvId(sender),
+         fMbSharedState.GetMbvId(sender.GetId()),
          fRouter->GetDirectionByLpRank(
                pMailboxReadMessage->GetOriginalAlp().GetRank()),
          pMailboxReadMessage->GetNumberOfHops());
@@ -526,23 +526,29 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
    const AbstractValue *value = pMailboxWriteMessage->GetValue();
    unsigned long time = pMailboxWriteMessage->GetTimestamp();
    const LpId &sender = pMailboxWriteMessage->GetOriginalAlp();
-   const LpId &receiver = pMailboxWriteMessage->GetReceiver();
+   const unsigned long mbOwnerId = pMailboxWriteMessage->GetMbOwnerId();
    WriteStatus writeStatus;
-   bool writeTie = fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAlp(),
-                                             pMailboxWriteMessage->GetReceiver(), time, value);
-   RollbackList rollbackList = fMbSharedState.GetRollbacklist(receiver, time);
+   bool success = fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAlp(),
+                                            pMailboxWriteMessage->GetMbOwnerId(), time, value);
+   //RollbackList rollbackList = fMbSharedState.GetRollbacklist(receiver, time);
 
-   if (writeTie) {
+   if (success) {
       writeStatus = writeSUCCESS;
-   } else if (rollbackList.GetSize() > 0) {
+   } else  {
+       // the receiver is rolled back
       // see len(rblist) else RB
       // Receiver Agent RB to ptime, send Anti-Read msg
-      RollbackList rollbackList = fMbSharedState.GetRollbacklist(receiver, time);
-      RollbackTag rollbackTag(fMbSharedState.GetMbvId(receiver), time, ROLLBACK_BY_WRITE);
-      rollbackList.SendRollbacks(this, rollbackTag);
+       RollbackMessage* rollbackMessage = new RollbackMessage();
+       rollbackMessage->SetOrigin(this->GetRank());
+       rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
+       // Rollback message timestamp is the time of the read to be rolled back
+       rollbackMessage->SetTimestamp(time);
+       // Mattern colour set by GVT Calculator
+       RollbackTag rollbackTag(fMbSharedState.GetMbvId(mbOwnerId), time, ROLLBACK_BY_WRITE);
+       rollbackMessage->SetRollbackTag(rollbackTag);
+       rollbackMessage->SetOriginalAlp(LpId(mbOwnerId,fMbSharedState.GetRankFromAgentId(mbOwnerId)));
+       rollbackMessage->Send(this);
       // TODO generate rbwritemsg to sender & generate rbreadmsg to owner in ALP
-   } else {
-      writeStatus = writeFAILURE;
    }
    auto *mbWriteResponseMsg = new MbWriteResponseMsg();
    mbWriteResponseMsg->SetOrigin(GetRank());
@@ -556,7 +562,7 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
 
 #ifdef SSV_LOCALISATION
    // Update the access count for state migration
-   fSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(sender),
+   fSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(mbOwnerId),
                                   fRouter->GetDirectionByLpRank(pMailboxWriteMessage->GetOriginalAlp().GetRank()),
                                   pMailboxWriteMessage->GetNumberOfHops());
 #endif
@@ -568,10 +574,10 @@ void Clp::ProcessMessage(const MbAntiReadMsg *pMbAntiReadMsg) {
       return;
    }
    RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAlp(),pMbAntiReadMsg->GetTimestamp());
-   fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAlp(), pMbAntiReadMsg->GetTimestamp(), rollbackList);
+   fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAlp().GetId(), pMbAntiReadMsg->GetTimestamp(), rollbackList);
    rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
 
-   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(pMbAntiReadMsg->GetOriginalAlp()),
+   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(pMbAntiReadMsg->GetOriginalAlp().GetId()),
                                     fRouter->GetDirectionByLpRank(pMbAntiReadMsg->GetOriginalAlp().GetRank()),
                                     pMbAntiReadMsg->GetNumberOfHops());
 }
@@ -582,7 +588,9 @@ void Clp::ProcessMessage(const MbAntiWriteMsg *pMbAntiWriteMsg) {
       return;
    }
    RollbackList rollbackList;
-   fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetOriginalAlp(), pMbAntiWriteMsg->GetTimestamp(),rollbackList);
+    fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetOriginalAlp().GetId(), pMbAntiWriteMsg->GetOriginalAlp(),
+                                 pMbAntiWriteMsg->GetTimestamp(), rollbackList);
+   rollbackList.SendRollbacks(this, pMbAntiWriteMsg->GetRollbackTag());
 
 }
 

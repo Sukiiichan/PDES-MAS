@@ -1,12 +1,12 @@
 #ifndef MAILBOXREADMESSAGE_H
 #define MAILBOXREADMESSAGE_H
 
-#include "HasSSVID.h"
+#include "HasMBOwnerID.h"
 #include "SharedStateMessage.h"
 
 namespace pdesmas {
    class MailboxReadMessage: public SharedStateMessage,
-                             public HasSSVID {
+                             public HasMBOwnerID {
    private:
       static AbstractMessage* CreateInstance();
 

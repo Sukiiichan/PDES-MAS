@@ -24,7 +24,7 @@ namespace pdesmas {
       map<unsigned int, Direction> fRankToDirectionMap;
       map<Direction, unsigned int> fDirectionToRankMap;
       map<SsvId, Direction> fSSVIDToDirectionMap;
-     map<LpId, SsvId> MailboxAgentMap; // map agentid with mailbox variable id, same as the map in mbsharedstate
+     map<unsigned long, SsvId> MailboxAgentMap; // map agentid with mailbox variable id, same as the map in mbsharedstate
 
 
   public:
@@ -32,7 +32,7 @@ namespace pdesmas {
       ~RouteTable();
       RouteTable(unsigned int, unsigned int, const Initialisor*);
 
-      Direction GetDirectionFromMbOwner(const LpId&) const;
+      Direction GetDirectionFromMbOwnerId(const unsigned long pOwnerId) const;
       Direction GetDirectionFromSsvId(const SsvId&) const;
       Direction GetDirectionFromRank(unsigned int) const;
       unsigned int GetRankFromDirection(const Direction) const;

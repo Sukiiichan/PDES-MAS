@@ -2,22 +2,24 @@
 #define PDES_MAS_MBANTIREADMSG_H
 
 #include "AntiMessage.h"
-#include "HasSSVID.h"
+#include "HasMBOwnerID.h"
 
-namespace pdesmas{
-   class MbAntiReadMsg:public AntiMessage,public HasSSVID{
-   private:
-      static AbstractMessage* CreateInstance();
+namespace pdesmas {
+  class MbAntiReadMsg : public AntiMessage, public HasMBOwnerID {
+  private:
+    static AbstractMessage *CreateInstance();
 
-   public:
-      MbAntiReadMsg();
-      virtual ~MbAntiReadMsg();
+  public:
+    MbAntiReadMsg();
 
-      pdesmasType GetType() const;
+    virtual ~MbAntiReadMsg();
 
-      void Serialise(ostream&) const;
-      void Deserialise(istream&);
-   };
+    pdesmasType GetType() const;
+
+    void Serialise(ostream &) const;
+
+    void Deserialise(istream &);
+  };
 }
 
 #endif //PDES_MAS_MBANTIREADMSG_H
