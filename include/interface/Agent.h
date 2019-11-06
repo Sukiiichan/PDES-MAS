@@ -32,6 +32,15 @@ namespace pdesmas {
     SendWriteMessageAndGetResponse(unsigned long pVariableId, T pValue, unsigned long pTime);
 
 
+    template<typename T>
+    const MbWriteResponseMsg*
+    SendMbWriteMessageAndGetResponse(unsigned long agentId, T pValue, unsigned long timestamp);
+
+
+    const MbReadResponseMsg*
+    SendMbReadMessageAndGetResponse(unsigned long timestamp);
+
+
     const RangeQueryMessage *
     SendRangeQueryPointMessageAndGetResponse(unsigned long pTime, const Point pStartValue, const Point pEndValue);
 
@@ -87,8 +96,19 @@ namespace pdesmas {
 
     bool WriteString(unsigned long variable_id, string value, unsigned long timestamp);
 
+    bool WriteMbInt(unsigned long agent_id, int value, unsigned long timestamp);
+
+    bool WriteMbDouble(unsigned long agent_id, double value, unsigned long timestamp);
+
+    bool WriteMbPoint(unsigned long agent_id, Point value, unsigned long timestamp);
+
+    bool WriteMbString(unsigned long agent_id, string value, unsigned long timestamp);
+
     const SerialisableMap<SsvId, Value<Point> >
     RangeQueryPoint(const Point start, const Point end, unsigned long timestamp);
+
+    template<typename T>
+    const SerialisableMap<unsigned long, T> RequestNewMails(unsigned long pOwnerId, unsigned long timestamp);
 
 
   public:

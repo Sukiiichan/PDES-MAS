@@ -81,6 +81,9 @@ public:
 
   Simulation &preload_variable(unsigned long ssvId, string v, int clpId);
 
+  Simulation &preload_variable(unsigned long agentId, int clpId);
+  // may use MbSS to set initial value
+
   void Run();
 
   void Finalise();

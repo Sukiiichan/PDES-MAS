@@ -13,6 +13,10 @@
 #include "HasRollbackTagList.h"
 #include "SingleReadResponseMessage.h"
 #include "WriteResponseMessage.h"
+#include "MbReadResponseMsg.h"
+#include "MbWriteResponseMsg.h"
+#include "MailboxReadMessage.h"
+#include "MailboxWriteMessage.h"
 #include <vector>
 #include <interface/IdentifierHandler.h>
 #include <PrivateVariableStorage.h>

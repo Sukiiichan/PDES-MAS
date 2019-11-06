@@ -94,6 +94,47 @@ Agent::SendWriteMessageAndGetResponse(unsigned long pVariableId, T pValue, unsig
 
 }
 
+const MbReadResponseMsg* Agent::SendMbReadMessageAndGetResponse(unsigned long timestamp) {
+  LOG(logFINEST) << "Agent::SendMbReadMessageAndGetResponse(" << attached_alp_->GetRank() << ")# Set LVT to: " << timestamp;
+  MailboxReadMessage *mailboxReadMessage = new MailboxReadMessage();
+  mailboxReadMessage->SetOrigin(attached_alp_->GetRank());
+  mailboxReadMessage->SetDestination(attached_alp_->GetParentClp());
+  mailboxReadMessage->SetTimestamp(timestamp);
+  mailboxReadMessage->SetNumberOfHops(0);
+  mailboxReadMessage->SetIdentifier(attached_alp_->GetNewMessageId());
+  mailboxReadMessage->SetOriginalAgent(agent_identifier_);
+  mailboxReadMessage->SendToLp(attached_alp_);
+  WaitUntilMessageArrive();
+  const AbstractMessage *rsp = attached_alp_->GetResponseMessage(agent_identifier_.GetId());
+  // TODO may need to print log here instead
+  return (const MbReadResponseMsg*) rsp;
+}
+
+
+template<typename T>
+const MbWriteResponseMsg *Agent::SendMbWriteMessageAndGetResponse(unsigned long receiverId, T pValue,
+                                                                  unsigned long timestamp) {
+  LOG(logFINEST) << "Agent::MbWrite" << attached_alp_->GetRank() << ")# Set LVT to: " << timestamp;
+  Value<T> *value = new Value<T>(pValue);
+  MailboxWriteMessage *mbWriteMsg = new MailboxWriteMessage();
+  mbWriteMsg->SetOrigin(attached_alp_->GetRank());
+  mbWriteMsg->SetDestination(attached_alp_->GetParentClp());
+
+  mbWriteMsg->SetMbOwnerId(receiverId); // should be receiver identifier
+  mbWriteMsg->SetTimestamp(timestamp);
+  mbWriteMsg->SetNumberOfHops(0);
+  mbWriteMsg->SetIdentifier(attached_alp_->GetNewMessageId());
+  mbWriteMsg->SetOriginalAgent(agent_identifier_);
+  // TODO modify OriginalALP->Agent
+  mbWriteMsg->SetValue(value);
+
+  mbWriteMsg->SendToLp(attached_alp_);
+  WaitUntilMessageArrive();
+  const AbstractMessage *rsp = attached_alp_->GetResponseMessage(agent_identifier_.GetId());
+  // TODO print log
+  return (const MbWriteResponseMsg *) rsp;
+}
+
 
 const RangeQueryMessage *
 Agent::SendRangeQueryPointMessageAndGetResponse(unsigned long pTime, const Point pStartValue, const Point pEndValue) {
@@ -299,6 +340,44 @@ bool Agent::WriteString(unsigned long variable_id, string value, unsigned long t
   return status == writeSUCCESS;
 }
 
+bool Agent::WriteMbInt(unsigned long agent_id, int value, unsigned long timestamp) {
+  assert(timestamp > this->GetGVT());
+  const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<int>(agent_id, value, timestamp);
+
+  this->SetLVT(timestamp);
+
+  return true;
+}
+
+
+bool Agent::WriteMbDouble(unsigned long agent_id, double value, unsigned long timestamp) {
+  assert(timestamp > this->GetGVT());
+  const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<double>(agent_id, value, timestamp);
+
+  this->SetLVT(timestamp);
+
+  return true;
+}
+
+
+bool Agent::WriteMbPoint(unsigned long agent_id, Point value, unsigned long timestamp) {
+  assert(timestamp > this->GetGVT());
+  const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<Point>(agent_id, value, timestamp);
+
+  this->SetLVT(timestamp);
+
+  return true;
+}
+
+
+bool Agent::WriteMbString(unsigned long agent_id, string value, unsigned long timestamp) {
+  assert(timestamp > this->GetGVT());
+  const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<string>(agent_id, value, timestamp);
+
+  this->SetLVT(timestamp);
+
+  return true;
+}
 
 const SerialisableMap<SsvId, Value<Point> >
 Agent::RangeQueryPoint(const Point start, const Point end, unsigned long timestamp) {
@@ -308,6 +387,17 @@ Agent::RangeQueryPoint(const Point start, const Point end, unsigned long timesta
   this->SetLVT(timestamp);
 
   return r;
+}
+
+template<typename T>
+const SerialisableMap<unsigned long, T> Agent::RequestNewMails(unsigned long pOwnerId, unsigned long timestamp){
+  assert(timestamp > this->GetLVT());
+  const MbReadResponseMsg *resp = SendMbReadMessageAndGetResponse(timestamp);
+  // auto result = resp->GetMailMap();
+  // TODO add type of content: MailMap, replace fValue in mbreadrspmsg
+  this->SetLVT(timestamp);
+
+  // return result;
 }
 
 void Agent::NotifyMessageArrive() {
