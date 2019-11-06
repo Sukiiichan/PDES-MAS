@@ -27,6 +27,8 @@ namespace pdesmas {
       void AddToSendList(const MailboxReadMessage*);
       void AddToSendList(const MailboxWriteMessage*);
       void AddToSendList(const RangeQueryMessage*);
+
+    bool RemoveFromSendList(unsigned long message_id);
       list<SharedStateMessage*> RollbackSendList(unsigned long, const LpId&);
       void ClearSendList(unsigned long);
   };

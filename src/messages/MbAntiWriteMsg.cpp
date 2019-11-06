@@ -25,7 +25,7 @@ void MbAntiWriteMsg::Serialise(ostream &pOstream) const {
    pOstream << DELIM_VAR_SEPARATOR << fMatternColour;
    pOstream << DELIM_VAR_SEPARATOR << fNumberOfHops;
    pOstream << DELIM_VAR_SEPARATOR << fRollbackTag;
-   pOstream << DELIM_VAR_SEPARATOR << fOriginalAlp;
+   pOstream << DELIM_VAR_SEPARATOR << original_agent_;
    pOstream << DELIM_RIGHT;
 }
 
@@ -45,6 +45,6 @@ void MbAntiWriteMsg::Deserialise(istream &pIstream) {
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> fRollbackTag;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
-   pIstream >> fOriginalAlp;
+   pIstream >> original_agent_;
    IgnoreTo(pIstream, DELIM_RIGHT);
 }
