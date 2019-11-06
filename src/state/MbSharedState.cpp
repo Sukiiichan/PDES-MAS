@@ -89,7 +89,7 @@ AbstractValue *MbSharedState::Read(const unsigned long pOwnerId, unsigned long p
    return MailboxVariableMap.find(fSsvId)->second.ReadMb(pOwnerId, pTime);
 }
 
-void MbSharedState::RollbackRead(const unsigned long pOwnerId, unsigned long pTime, RollbackList pRollbackList) {
+void MbSharedState::RollbackRead(const unsigned long pOwnerId, unsigned long pTime) {
    // rollbacks reads that shouldnt happen
    SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
    MailboxVariable mbv = MailboxVariableMap.find(mbvId)->second;

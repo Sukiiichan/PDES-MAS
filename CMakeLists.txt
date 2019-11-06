@@ -89,6 +89,17 @@ add_library(PDESMAS SHARED
         src/messages/WriteAntiMessage.cpp
         src/messages/WriteMessage.cpp
         src/messages/WriteResponseMessage.cpp
+        src/state/MbMail.cpp
+        src/state/MailboxVariable.cpp
+        src/state/MbSharedState.cpp
+        src/messages/MailboxReadMessage.cpp
+        src/messages/MailboxWriteMessage.cpp
+        src/messages/MbReadResponseMsg.cpp
+        src/messages/MbWriteResponseMsg.cpp
+        src/messages/content/HasMBOwnerID.cpp
+        src/messages/MbWriteResponseMsg.cpp
+        src/messages/MbAntiReadMsg.cpp
+        src/messages/MbAntiWriteMsg.cpp
         src/parse/Initialisor.cpp
         src/rangequery/RangePeriod.cpp
         src/rangequery/RangePeriodListEntry.cpp
@@ -113,22 +124,7 @@ add_library(PDESMAS SHARED
         src/util/Mutex.cpp
         src/util/Thread.cpp
         src/interface/Simulation.cpp
-        src/state/PrivateVariableStorage.cpp
-        include/state/MbMessage.h
-        src/state/MbMessage.cpp
-        src/state/MailboxVariable.cpp
-        src/state/MbSharedState.cpp
-        src/messages/MailboxWriteMessage.cpp
-        include/messages/MbReadResponseMsg.h
-        src/messages/MbReadResponseMsg.cpp
-        include/messages/content/HasMBOwnerID.h
-        src/messages/content/HasMBOwnerID.cpp
-        include/messages/MbAntiReadMsg.h
-        include/messages/MbWriteResponseMsg.h
-        src/messages/MbWriteResponseMsg.cpp
-        src/messages/MbAntiReadMsg.cpp
-        include/messages/MbAntiWriteMsg.h
-        src/messages/MbAntiWriteMsg.cpp)
+        src/state/PrivateVariableStorage.cpp)
 
 add_executable(runtest src/testing/TestAgent.cpp src/testing/run.cpp)
 add_executable(tileworld src/testing/Tileworld/TileWorldAgent.cpp src/testing/Tileworld/run.cpp)

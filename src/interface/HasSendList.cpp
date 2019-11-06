@@ -120,13 +120,13 @@ void HasSendList::AddToSendList(const RangeQueryMessage *pRangeQueryMessage) {
 }
 
 void HasSendList::AddToSendList(const MailboxReadMessage *pMailboxReadMessage) {
-   MailboxReadMessage* copyMessage = new MailboxReadMessage;
+   MailboxReadMessage* copyMessage = new MailboxReadMessage();
    *copyMessage = *pMailboxReadMessage;
    fSendList.push_back(copyMessage);
 }
 
 void HasSendList::AddToSendList(const MailboxWriteMessage *pMailboxWriteMessage) {
-   MailboxWriteMessage* copyMessage = new MailboxWriteMessage;
+   MailboxWriteMessage* copyMessage = new MailboxWriteMessage();
    *copyMessage = *pMailboxWriteMessage;
    fSendList.push_back(copyMessage);
 }

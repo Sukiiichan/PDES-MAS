@@ -14,6 +14,10 @@ pdesmasType MbReadResponseMsg::GetType() const {
    return MBREADRESPONSEMSG;
 }
 
+AbstractMessage *MbReadResponseMsg::CreateInstance() {
+   return new MbReadResponseMsg;
+}
+
 void MbReadResponseMsg::Serialise(ostream &pOstream) const {
    pOstream << DELIM_LEFT << GetType();
    pOstream << DELIM_VAR_SEPARATOR << fOrigin;
@@ -47,3 +51,4 @@ void MbReadResponseMsg::Deserialise(istream &pIstream) {
    fValue->SetValue(value);
    IgnoreTo(pIstream, DELIM_RIGHT);
 }
+

@@ -53,7 +53,7 @@ namespace pdesmas {
 
         AbstractValue *Read(const unsigned long pOwnerId, unsigned long pTime);
 
-        void RollbackRead(const unsigned long pOwnerId, unsigned long pTime, RollbackList pRollbackList);
+        void RollbackRead(const unsigned long pOwnerId, unsigned long pTime);
 
         void RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime,
                            RollbackList pRollbackList);

@@ -5,7 +5,7 @@
 #include <state/SsvId.h>
 #include <state/AbstractValue.h>
 #include <types/SerialisableList.h>
-#include <state/MbMessage.h>
+#include <state/MbMail.h>
 #include <vector>
 
 using namespace std;
@@ -15,7 +15,7 @@ namespace pdesmas {
         SsvId mbVariableID;
         unsigned long  ownerAgentId;
         LpId ownerAgent;
-        SerialisableList<MbMessage> messageList;
+        SerialisableList<MbMail> messageList;
         unsigned long readUntil;
 
     public:
@@ -33,7 +33,7 @@ namespace pdesmas {
 
         const unsigned long GetOwnerAgentId() const;
 
-        const SerialisableList<MbMessage> &GetMessageList() const;
+        const SerialisableList<MbMail> &GetMessageList() const;
 
         bool AddMbMessage(const AbstractValue *, unsigned long, const LpId &);
 

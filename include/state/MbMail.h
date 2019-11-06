@@ -1,5 +1,5 @@
-#ifndef PDES_MAS_MBMESSAGE_H
-#define PDES_MAS_MBMESSAGE_H
+#ifndef PDES_MAS_MBMAIL_H
+#define PDES_MAS_MBMAIL_H
 
 
 using namespace std;
@@ -11,20 +11,20 @@ using namespace std;
 #include "RollbackList.h"
 
 namespace pdesmas {
-    class MbMessage : public Serialisable {
+    class MbMail : public Serialisable {
     private:
         unsigned long fTime;
         LpId fSender;
         AbstractValue *fValue;
 
     public:
-        MbMessage();
+        MbMail();
 
-        MbMessage(unsigned long, const AbstractValue *, const LpId &);
+        MbMail(unsigned long, const AbstractValue *, const LpId &);
 
-        MbMessage(const MbMessage &);
+        MbMail(const MbMail &);
 
-        ~ MbMessage();
+        ~ MbMail();
 
         AbstractValue *Read(unsigned long);
         // void DelOldMsg(unsigned long, unsigned long); // delete old message to recycle memory space

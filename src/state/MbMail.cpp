@@ -1,27 +1,27 @@
-#include "MbMessage.h"
+#include "MbMail.h"
 
 using namespace pdesmas;
 
-MbMessage::MbMessage() {
+MbMail::MbMail() {
     fTime = 0;
     fValue = NULL;
     fSender = LpId(0, 0);
 }
 
-MbMessage::MbMessage(unsigned long pTime, const AbstractValue* pValue, const LpId& pSender){
+MbMail::MbMail(unsigned long pTime, const AbstractValue* pValue, const LpId& pSender){
     // SetTime(pTime);
     fTime = pTime;
     SetValue(pValue);
     fSender = pSender;
 }
 
-MbMessage::MbMessage(const MbMessage & pMbMessage){
+MbMail::MbMail(const MbMail & pMbMessage){
     fTime = pMbMessage.fTime;
     SetValue(pMbMessage.fValue);
     fSender = LpId(pMbMessage.fSender);
 }
 
-MbMessage::~MbMessage() { //
+MbMail::~MbMail() { //
     if (fValue != NULL) {
         delete fValue;
         fValue = NULL;
@@ -30,48 +30,48 @@ MbMessage::~MbMessage() { //
 
 // operations on single msg
 
-AbstractValue* MbMessage::Read(unsigned long pTime) {
+AbstractValue* MbMail::Read(unsigned long pTime) {
     return GetValueCopy();
 }
 
 
-void MbMessage::SetTime(unsigned long pTime) {
+void MbMail::SetTime(unsigned long pTime) {
     fTime = pTime;
 }
 
-unsigned long MbMessage::GetTime() const {
+unsigned long MbMail::GetTime() const {
     return fTime;
 }
 
-void MbMessage::SetValue(const AbstractValue* pValue) {
+void MbMail::SetValue(const AbstractValue* pValue) {
     if (pValue == NULL) {
         return;
     }
     fValue = pValue->Clone();
 }
 
-AbstractValue* MbMessage::GetValueCopy() const {
+AbstractValue* MbMail::GetValueCopy() const {
     if (fValue == NULL)
         return NULL;
     return fValue->Clone();
 }
 
-void MbMessage::SetSender(const LpId& pSender) {
+void MbMail::SetSender(const LpId& pSender) {
     fSender = pSender;
 }
 
-const LpId& MbMessage::GetSender() const {
+const LpId& MbMail::GetSender() const {
     return fSender;
 }
 
-void MbMessage::Serialise(ostream & pOstream) const {
+void MbMail::Serialise(ostream & pOstream) const {
     pOstream << DELIM_LEFT << fTime;
     pOstream << DELIM_VAR_SEPARATOR << fSender;
     pOstream << DELIM_VAR_SEPARATOR << *fValue;
     pOstream << DELIM_RIGHT;
 }
 
-void MbMessage::Deserialise(istream & pIstream) {
+void MbMail::Deserialise(istream & pIstream) {
     IgnoreTo(pIstream, DELIM_LEFT);
     pIstream >> fTime;
     IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);

@@ -5,12 +5,10 @@
 #include "MbWriteResponseMsg.h"
 #include "WriteAntiMessage.h"
 #include "SingleReadAntiMessage.h"
-#include "LoadBalancingMessage.h"
 #include "StateMigrationMessage.h"
 #include "WriteResponseMessage.h"
 #include "assert.h"
 #include "Log.h"
-#include "Helper.h"
 #include "Initialisor.h"
 #include "GvtRequestMessage.h"
 
@@ -577,9 +575,10 @@ void Clp::ProcessMessage(const MbAntiReadMsg *pMbAntiReadMsg) {
       LOG(logERROR) << "";
       return;
    }
-   RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAgent(),pMbAntiReadMsg->GetTimestamp());
-   fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp(), rollbackList);
-   rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
+   // RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAgent(),pMbAntiReadMsg->GetTimestamp());
+   fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp());
+   // rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
+   // TODO modify this
 
    fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(pMbAntiReadMsg->GetOriginalAgent().GetId()),
                                     fRouter->GetDirectionByLpRank(pMbAntiReadMsg->GetOriginalAgent().GetRank()),

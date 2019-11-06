@@ -33,7 +33,7 @@ const unsigned long MailboxVariable::GetOwnerAgentId() const {
    return ownerAgentId;
 }
 
-const SerialisableList<MbMessage> &MailboxVariable::GetMessageList() const {
+const SerialisableList<MbMail> &MailboxVariable::GetMessageList() const {
    return messageList;
 }
 
@@ -70,7 +70,7 @@ void MailboxVariable::PerformWriteRB(const LpId &pSender, unsigned long pTime, R
 bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender) {
    if (pTime >= readUntil) {
       auto mbMessageIterator = messageList.begin();
-      auto newMsg = MbMessage(pTime, pValue, pSender);
+      auto newMsg = MbMail(pTime, pValue, pSender);
       while (mbMessageIterator != messageList.end()) {
          if (mbMessageIterator->GetTime() > pTime) {
             messageList.insert(mbMessageIterator, newMsg);
@@ -96,7 +96,7 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
 
 bool MailboxVariable::RemoveMbMessage(const LpId& pSender, unsigned long pTime) {
    LOG(logFINEST) << "MailboxVariable::RemoveMbMessage# Remove message sent at " << pTime;
-   SerialisableList<MbMessage>::iterator mbMessageIterator = messageList.begin();
+   SerialisableList<MbMail>::iterator mbMessageIterator = messageList.begin();
    while (mbMessageIterator != messageList.end()) {
       if (mbMessageIterator->GetTime() == pTime) {
          if (pTime < readUntil) {
