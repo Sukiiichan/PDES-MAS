@@ -49,12 +49,47 @@ void MbAgent::Cycle() {
 
    // spdlog::debug("Agent{0}, Agent{1}, MsgID{3}, replied", this->agentId, i, msgSerial);
 
-   // TODO read msg from mailbox, and if received reply msg
+   // read msg from mailbox, and see if received reply msg
    spdlog::debug("Agent{0}, request to read mailbox", this->agentId);
-   SerialisableMap<unsigned long, string> newMails = this->RequestNewMails<string>(agentId, this->GetAlpLVT() + 1);
+   SerialisableList<MbMail> newMails = this->RequestNewMails(agentId, this->GetAlpLVT() + 1);
+   // can modify RequestNewMails() to check type
    spdlog::debug("Agent{0}, read mailbox success", this->agentId);
    // FIXME may need to print log in Agent.cpp instead
+   auto newMailIterator = newMails.begin();
+   while(newMailIterator != newMails.end()){
+      unsigned long sender = newMailIterator->GetSender().GetId();
+      unsigned long timestamp = newMailIterator->GetTime();
 
-   // TODO internal counter for frequency
+      auto msgContentType = newMailIterator->GetValue()->GetType();
+      assert(msgContentType == VALUESTRING);
+      auto msgContent = ((const Value<string>*)(newMailIterator->GetValue()))->GetValueString();
+
+      string delimiter = "-";
+      auto token = msgContent.substr(0,msgContent.find(delimiter));
+      msgContent.erase(0,msgContent.find(delimiter)+ delimiter.length());
+
+      string reply_tie = msgContent.substr(0,msgContent.find(delimiter));
+
+      unsigned int messageSerial = stoi(msgContent.erase(0,msgContent.find(delimiter)+ delimiter.length()));
+
+      if(reply_tie == "0"){
+         spdlog::debug("Agent{0}, recv reply from Agent{1},serial{2}",agentId,sender,messageSerial);
+         // generate reply
+         string replyMsgContent = to_string(agentId) + "-1-" + to_string(messageSerial);
+         bool replyTie = this->WriteMbString(sender, replyMsgContent, this->GetLVT() + 1);
+         spdlog::debug("Agent{0},request to reply Agent{1},serial{2}",agentId,sender, messageSerial);
+         if (replyTie) {
+            // received response msg
+            spdlog::debug("Agent{0}, Agent{1}, MsgID{3}, write success", this->agentId, sender, messageSerial);
+         } else {
+            spdlog::debug("Agent{0}, Agent{1}, MsgID{3}, write failed", this->agentId, sender, messageSerial);
+         }
+      }else if(reply_tie == "1"){
+         // no action
+         spdlog::debug("Agent{0}, recv new msg from Agent{1},serial{2}",agentId,sender,messageSerial);
+      }
+   }
+   // may need add internal counter to control frequency
+
 }
 

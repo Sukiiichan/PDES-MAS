@@ -4,6 +4,7 @@
 #include <interface/Agent.h>
 #include <random>
 #include <ctime>
+#include <string>
 
 using namespace pdesmas;
 using namespace std;

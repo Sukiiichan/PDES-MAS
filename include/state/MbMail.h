@@ -41,6 +41,8 @@ namespace pdesmas {
 
         void SetValue(const AbstractValue *);
 
+        AbstractValue *GetValue() const;
+
         AbstractValue *GetValueCopy() const;
 
         void Serialise(ostream &) const;

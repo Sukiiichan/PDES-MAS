@@ -50,6 +50,12 @@ void MbMail::SetValue(const AbstractValue* pValue) {
     fValue = pValue->Clone();
 }
 
+
+AbstractValue* MbMail::GetValue() const {
+   return fValue;
+}
+
+
 AbstractValue* MbMail::GetValueCopy() const {
     if (fValue == NULL)
         return NULL;

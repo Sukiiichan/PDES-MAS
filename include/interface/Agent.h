@@ -107,8 +107,7 @@ namespace pdesmas {
     const SerialisableMap<SsvId, Value<Point> >
     RangeQueryPoint(const Point start, const Point end, unsigned long timestamp);
 
-    template<typename T>
-    const SerialisableMap<unsigned long, T> RequestNewMails(unsigned long pOwnerId, unsigned long timestamp);
+    const SerialisableList<MbMail> RequestNewMails(unsigned long pOwnerId, unsigned long timestamp);
 
 
   public:

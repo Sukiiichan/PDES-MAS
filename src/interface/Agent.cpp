@@ -389,15 +389,13 @@ Agent::RangeQueryPoint(const Point start, const Point end, unsigned long timesta
   return r;
 }
 
-template<typename T>
-const SerialisableMap<unsigned long, T> Agent::RequestNewMails(unsigned long pOwnerId, unsigned long timestamp){
+const SerialisableList<MbMail> Agent::RequestNewMails(unsigned long pOwnerId, unsigned long timestamp){
   assert(timestamp > this->GetLVT());
   const MbReadResponseMsg *resp = SendMbReadMessageAndGetResponse(timestamp);
-  // auto result = resp->GetMailMap();
-  // TODO add type of content: MailMap, replace fValue in mbreadrspmsg
+  auto result = resp->GetMailList();
   this->SetLVT(timestamp);
 
-  // return result;
+   return result;
 }
 
 void Agent::NotifyMessageArrive() {

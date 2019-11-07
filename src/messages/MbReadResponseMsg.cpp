@@ -26,7 +26,7 @@ void MbReadResponseMsg::Serialise(ostream &pOstream) const {
    pOstream << DELIM_VAR_SEPARATOR << fMatternColour;
    pOstream << DELIM_VAR_SEPARATOR << fIdentifier;
    pOstream << DELIM_VAR_SEPARATOR << original_agent_;
-   pOstream << DELIM_VAR_SEPARATOR << *fValue;
+   pOstream << DELIM_VAR_SEPARATOR << fMailList;
    pOstream << DELIM_RIGHT;
 }
 
@@ -44,11 +44,7 @@ void MbReadResponseMsg::Deserialise(istream &pIstream) {
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
    pIstream >> original_agent_;
    IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
-   string valueString;
-   pIstream >> valueString;
-   string value = GetValueString(valueString);
-   fValue = valueClassMap->CreateObject(GetTypeID(valueString));
-   fValue->SetValue(value);
+   pIstream >> fMailList;
    IgnoreTo(pIstream, DELIM_RIGHT);
 }
 

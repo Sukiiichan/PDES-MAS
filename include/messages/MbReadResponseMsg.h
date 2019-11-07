@@ -2,12 +2,12 @@
 #define PDES_MAS_MBREADRESPONSEMSG_H
 
 #include "ResponseMessage.h"
-#include "HasValue.h"
 #include "MailboxReadMessage.h"
+#include "HasMailList.h"
 
 namespace pdesmas{
    class MbReadResponseMsg:public ResponseMessage,
-         public HasValue{
+         public HasMailList{
    private:
       static AbstractMessage* CreateInstance();
 

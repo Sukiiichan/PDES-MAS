@@ -124,7 +124,7 @@ add_library(PDESMAS SHARED
         src/util/Mutex.cpp
         src/util/Thread.cpp
         src/interface/Simulation.cpp
-        src/state/PrivateVariableStorage.cpp)
+        src/state/PrivateVariableStorage.cpp include/messages/content/HasMailList.h src/messages/content/HasMailList.cpp)
 
 add_executable(runtest src/testing/TestAgent.cpp src/testing/run.cpp)
 add_executable(tileworld src/testing/Tileworld/TileWorldAgent.cpp src/testing/Tileworld/run.cpp)
