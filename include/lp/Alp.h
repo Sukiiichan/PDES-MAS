@@ -22,77 +22,82 @@
 #include <PrivateVariableStorage.h>
 
 namespace pdesmas {
-  class Agent;
+   class Agent;
 
-  class Alp : public Lp, public HasSendList, public HasRollbackTagList {
-  private:
-    map<unsigned long, Agent *> managed_agents_;
-    map<unsigned long, unsigned long> agent_lvt_map_;
-    IdentifierHandler *message_id_handler_;
-    map<unsigned long, const AbstractMessage *> agent_response_map_;
-    map<unsigned long, unsigned long> agent_response_message_id_map_;
-    //map<unsigned long, Semaphore *> agent_waiting_semaphore_map_;
-    map<unsigned long, vector<unsigned long> > agent_lvt_history_map_; // use this to perform LVT rollback
-    map<unsigned long, PrivateVariableStorage> agent_local_variables_map_;
-    map<unsigned long, bool> agent_cancel_flag_map_;
-    int fParentClp;
-    Mutex fProcessMessageMutex;
+   class Alp : public Lp, public HasSendList, public HasRollbackTagList {
+   private:
+      map<unsigned long, Agent *> managed_agents_;
+      map<unsigned long, unsigned long> agent_lvt_map_;
+      IdentifierHandler *message_id_handler_;
+      map<unsigned long, const AbstractMessage *> agent_response_map_;
+      map<unsigned long, unsigned long> agent_response_message_id_map_;
+      //map<unsigned long, Semaphore *> agent_waiting_semaphore_map_;
+      map<unsigned long, vector<unsigned long> > agent_lvt_history_map_; // use this to perform LVT rollback
+      map<unsigned long, PrivateVariableStorage> agent_local_variables_map_;
+      map<unsigned long, bool> agent_cancel_flag_map_;
+      int fParentClp;
+      Mutex fProcessMessageMutex;
 
 
-    bool ProcessRollback(const RollbackMessage *);
+      bool ProcessRollback(const RollbackMessage *);
 
-    void ProcessMessage(const RollbackMessage *);
+      void ProcessMessage(const RollbackMessage *);
 
-    void ProcessMessage(const SingleReadResponseMessage *);
+      void ProcessMessage(const SingleReadResponseMessage *);
 
-    void ProcessMessage(const WriteResponseMessage *);
+      void ProcessMessage(const MbReadResponseMsg *);
 
-    void ProcessMessage(const RangeQueryMessage *);
+      void ProcessMessage(const MbWriteResponseMsg *);
 
-  public:
-    Alp(unsigned int pRank, unsigned int pCommSize,
-        unsigned int pNumberOfClps, unsigned int pNumberOfAlps,
-        unsigned long pStartTime, unsigned long pEndTime,
-        const Initialisor *initialisor);
+      void ProcessMessage(const WriteResponseMessage *);
 
-    bool AddAgent(Agent *agent);
+      void ProcessMessage(const RangeQueryMessage *);
 
-    void SetCancelFlag(unsigned long agent_id, bool flag);
 
-    bool GetCancelFlag(unsigned long agent_id);
+   public:
+      Alp(unsigned int pRank, unsigned int pCommSize,
+          unsigned int pNumberOfClps, unsigned int pNumberOfAlps,
+          unsigned long pStartTime, unsigned long pEndTime,
+          const Initialisor *initialisor);
 
-    int GetParentClp() const;
+      bool AddAgent(Agent *agent);
 
-    unsigned long GetAgentLvt(unsigned long agent_id) const;
+      void SetCancelFlag(unsigned long agent_id, bool flag);
 
-    bool SetAgentLvt(unsigned long agent_id, unsigned long lvt);
+      bool GetCancelFlag(unsigned long agent_id);
 
-    bool HasAgent(unsigned long agent_id);
+      int GetParentClp() const;
 
-    void StartAllAgents();
+      unsigned long GetAgentLvt(unsigned long agent_id) const;
 
-    void SendEndMessage();
+      bool SetAgentLvt(unsigned long agent_id, unsigned long lvt);
 
-    unsigned long GetLvt() const;
+      bool HasAgent(unsigned long agent_id);
 
-    unsigned long GetNewMessageId() const;
+      void StartAllAgents();
 
-    const AbstractMessage *GetResponseMessage(unsigned long agent_id) const;
+      void SendEndMessage();
 
-    Semaphore &GetWaitingSemaphore(unsigned long agent_id);
+      unsigned long GetLvt() const;
 
-    bool TerminationCondition() const override;
+      unsigned long GetNewMessageId() const;
 
-    void SetGvt(unsigned long);
+      const AbstractMessage *GetResponseMessage(unsigned long agent_id) const;
 
-    void Send() override;
+      Semaphore &GetWaitingSemaphore(unsigned long agent_id);
 
-    void Receive() override;
+      bool TerminationCondition() const override;
 
-    void Initialise() override;
+      void SetGvt(unsigned long);
 
-    void Finalise() override;
-  };
+      void Send() override;
+
+      void Receive() override;
+
+      void Initialise() override;
+
+      void Finalise() override;
+   };
 }
 
 #endif /* IALP_H_ */
