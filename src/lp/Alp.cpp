@@ -475,6 +475,30 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
                antiWriteMessage->SendToLp(this);
             }
                break;
+            case MAILBOXREADMESSAGE: {
+               MailboxReadMessage *mailboxReadMessage = static_cast<MailboxReadMessage *>(*iter);
+               MbAntiReadMsg *mbAntiReadMsg = new MbAntiReadMsg();
+               mbAntiReadMsg->SetOrigin(GetRank());
+               mbAntiReadMsg->SetDestination(GetParentClp());
+               mbAntiReadMsg->SetTimestamp(mailboxReadMessage->GetTimestamp());
+               mbAntiReadMsg->SetNumberOfHops(0);
+               mbAntiReadMsg->SetRollbackTag(pRollbackMessage->GetRollbackTag());
+               mbAntiReadMsg->SetOriginalAgent(mailboxReadMessage->GetOriginalAgent());
+               mbAntiReadMsg->SendToLp(this);
+            }
+               break;
+            case MAILBOXWRITEMESSAGE: {
+               MailboxWriteMessage *mailboxWriteMessage = static_cast<MailboxWriteMessage *>(*iter);
+               MbAntiWriteMsg *mbAntiWriteMsg = new MbAntiWriteMsg();
+               mbAntiWriteMsg->SetOrigin(GetRank());
+               mbAntiWriteMsg->SetDestination(GetParentClp());
+               mbAntiWriteMsg->SetTimestamp(mailboxWriteMessage->GetTimestamp());
+               mbAntiWriteMsg->SetNumberOfHops(0);
+               mbAntiWriteMsg->SetRollbackTag(pRollbackMessage->GetRollbackTag());
+               mbAntiWriteMsg->SetOriginalAgent(mailboxWriteMessage->GetOriginalAgent());
+               mbAntiWriteMsg->SendToLp(this);
+            }
+               break;
             case RANGEQUERYMESSAGE : {
                RangeQueryMessage *rangeQueryMessage = static_cast<RangeQueryMessage *> (*iter);
                RangeQueryAntiMessage *antiRangeQueryMessage = new RangeQueryAntiMessage();
