@@ -47,7 +47,7 @@ namespace pdesmas {
 
         vector<pair<LpId, unsigned long>> GetRbList(unsigned long);
 
-        AbstractValue *ReadMb(const unsigned long reqAgentId, unsigned long reqTime);
+        SerialisableList<MbMail> ReadMb(const unsigned long reqAgentId, unsigned long reqTime);
 
         void Serialise(ostream &) const;
 

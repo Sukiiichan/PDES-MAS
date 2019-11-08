@@ -503,7 +503,8 @@ void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
    unsigned int dstClp = pMailboxReadMessage->GetDestination();
    unsigned long reqTime = pMailboxReadMessage->GetTimestamp();
 
-   AbstractValue *value = fMbSharedState.Read(sender.GetId(), reqTime);
+   SerialisableList<MbMail> mailList = fMbSharedState.Read(sender.GetId(), reqTime);
+   // FIXME should read MailList, not single mail value
 
    MbReadResponseMsg *mbReadResponseMsg = new MbReadResponseMsg();
    mbReadResponseMsg->SetOrigin(GetRank());
@@ -511,7 +512,7 @@ void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
    mbReadResponseMsg->SetTimestamp(pMailboxReadMessage->GetTimestamp());
    mbReadResponseMsg->SetIdentifier(pMailboxReadMessage->GetIdentifier());
    mbReadResponseMsg->SetOriginalAgent(pMailboxReadMessage->GetOriginalAgent());
-   mbReadResponseMsg->SetValue(value);
+   mbReadResponseMsg->SetMailList(mailList);
    mbReadResponseMsg->SendToLp(this);
 
 #ifdef SSV_LOCALISATION

@@ -146,20 +146,25 @@ void MailboxVariable::RemoveOldMessage(unsigned long pTime) {
 //   return result;
 //}
 
-AbstractValue *MailboxVariable::ReadMb(const unsigned long reqAgentId, unsigned long reqTime) {
+SerialisableList<MbMail> MailboxVariable::ReadMb(const unsigned long reqAgentId, unsigned long reqTime) {
+   // FIXME rewrite
+   SerialisableList<MbMail> mailList;
    if (reqAgentId == ownerAgentId) {
       // or check map
       if (reqTime >= readUntil && reqTime <= messageList.end()->GetTime()) {
          auto mbMessageIterator = messageList.begin();
          while (mbMessageIterator != messageList.end()) {
-            if (mbMessageIterator->GetTime() < reqTime) {
-               ++mbMessageIterator;
-            } else {
-               auto msgContent = mbMessageIterator->GetValueCopy();
+            if (mbMessageIterator->GetTime() > reqTime) {
+//               MbMail temp;
+//               temp.SetTime(mbMessageIterator->GetTime());
+//               temp.SetSender(mbMessageIterator->GetSender());
+//               temp.SetValue(mbMessageIterator->GetValue());
+               mailList.push_back(*mbMessageIterator);
                readUntil = mbMessageIterator->GetTime();
-               return msgContent;
             }
+            ++mbMessageIterator;
          }
+         return mailList;
       } else {
          LOG(logERROR) << "former read request arrives";
       }

@@ -51,7 +51,7 @@ namespace pdesmas {
 
         SsvId GetMbvId(const unsigned long pSenderId);
 
-        AbstractValue *Read(const unsigned long pOwnerId, unsigned long pTime);
+        SerialisableList<MbMail>Read(const unsigned long pOwnerId, unsigned long pTime);
 
         void RollbackRead(const unsigned long pOwnerId, unsigned long pTime);
 

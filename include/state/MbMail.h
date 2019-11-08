@@ -2,53 +2,53 @@
 #define PDES_MAS_MBMAIL_H
 
 
-using namespace std;
 
 #include "Serialisable.h"
 #include "ObjectMgr.h"
 #include "SerialisableMultiMap.h"
 #include "Log.h"
 #include "RollbackList.h"
+using namespace std;
 
 namespace pdesmas {
-    class MbMail : public Serialisable {
-    private:
-        unsigned long fTime;
-        LpId fSender;
-        AbstractValue *fValue;
+   class MbMail : public Serialisable {
+   private:
+      unsigned long fTime;
+      LpId fSender;
+      AbstractValue *fValue;
 
-    public:
-        MbMail();
+   public:
+      MbMail();
 
-        MbMail(unsigned long, const AbstractValue *, const LpId &);
+      MbMail(unsigned long, const AbstractValue *, const LpId &);
 
-        MbMail(const MbMail &);
+      MbMail(const MbMail &);
 
-        ~ MbMail();
+      ~ MbMail();
 
-        AbstractValue *Read(unsigned long);
-        // void DelOldMsg(unsigned long, unsigned long); // delete old message to recycle memory space
-        // void RemoveMsg(unsigned long, const LpId &);
+      AbstractValue *Read(unsigned long);
+      // void DelOldMsg(unsigned long, unsigned long); // delete old message to recycle memory space
+      // void RemoveMsg(unsigned long, const LpId &);
 
 
-        void SetTime(unsigned long);
+      void SetTime(unsigned long);
 
-        unsigned long GetTime() const;
+      unsigned long GetTime() const;
 
-        void SetSender(const LpId &);
+      void SetSender(const LpId &);
 
-        const LpId &GetSender() const;
+      const LpId &GetSender() const;
 
-        void SetValue(const AbstractValue *);
+      void SetValue(const AbstractValue *);
 
-        AbstractValue *GetValue() const;
+      AbstractValue *GetValue() const;
 
-        AbstractValue *GetValueCopy() const;
+      AbstractValue *GetValueCopy() const;
 
-        void Serialise(ostream &) const;
+      void Serialise(ostream &) const;
 
-        void Deserialise(istream &);
-    };
+      void Deserialise(istream &);
+   };
 }
 
 #endif

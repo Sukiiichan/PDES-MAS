@@ -5,11 +5,11 @@
 
 using namespace pdesmas;
 
-const SerialisableList<MbMail>& HasMailList::GetMailList() const {
+const SerialisableList<MbMail> &HasMailList::GetMailList() const {
    return fMailList;
 }
 
-void HasMailList::SetMailList(SerialisableList<MbMail> & pMailList) {
+void HasMailList::SetMailList(SerialisableList<MbMail> &pMailList) {
    fMailList = pMailList;
 }
 

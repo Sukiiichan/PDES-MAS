@@ -5,8 +5,8 @@
 #ifndef PDES_MAS_HASMAILLIST_H
 #define PDES_MAS_HASMAILLIST_H
 
-#include <types/SerialisableList.h>
 #include "MbMail.h"
+#include "SerialisableList.h"
 
 namespace pdesmas {
    class HasMailList {
@@ -15,7 +15,8 @@ namespace pdesmas {
    public:
       const SerialisableList<MbMail> &GetMailList() const;
 
-      void SetMailList(SerialisableList<MbMail> &);
+      void SetMailList(SerialisableList<MbMail> &mailList);
+
       void ClearMailList();
    };
 }
