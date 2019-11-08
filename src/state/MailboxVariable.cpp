@@ -147,7 +147,6 @@ void MailboxVariable::RemoveOldMessage(unsigned long pTime) {
 //}
 
 SerialisableList<MbMail> MailboxVariable::ReadMb(const unsigned long reqAgentId, unsigned long reqTime) {
-   // FIXME rewrite
    SerialisableList<MbMail> mailList;
    if (reqAgentId == ownerAgentId) {
       // or check map

@@ -504,7 +504,6 @@ void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
    unsigned long reqTime = pMailboxReadMessage->GetTimestamp();
 
    SerialisableList<MbMail> mailList = fMbSharedState.Read(sender.GetId(), reqTime);
-   // FIXME should read MailList, not single mail value
 
    MbReadResponseMsg *mbReadResponseMsg = new MbReadResponseMsg();
    mbReadResponseMsg->SetOrigin(GetRank());

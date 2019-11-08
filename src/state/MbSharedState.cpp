@@ -85,7 +85,6 @@ MailboxVariable MbSharedState::GetCopy(const SsvId &) {}
 
 SerialisableList<MbMail> MbSharedState::Read(const unsigned long pOwnerId, unsigned long pTime) {
    // unsigned long agentId = pAgent.GetId();
-   // FIXME rewrite
    SsvId fSsvId = MailboxAgentMap.find(pOwnerId)->second;
    return MailboxVariableMap.find(fSsvId)->second.ReadMb(pOwnerId, pTime);
 }
