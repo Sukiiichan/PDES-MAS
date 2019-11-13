@@ -1,18 +1,18 @@
-#ifndef PDES_MAS_MBANTIREADMSG_H
-#define PDES_MAS_MBANTIREADMSG_H
+#ifndef PDES_MAS_MBREADANTIMSG_H
+#define PDES_MAS_MBREADANTIMSG_H
 
 #include "AntiMessage.h"
 #include "HasMBOwnerID.h"
 
 namespace pdesmas {
-  class MbAntiReadMsg : public AntiMessage, public HasMBOwnerID {
+  class MbReadAntiMsg : public AntiMessage, public HasMBOwnerID {
   private:
     static AbstractMessage *CreateInstance();
 
   public:
-    MbAntiReadMsg();
+    MbReadAntiMsg();
 
-    virtual ~MbAntiReadMsg();
+    virtual ~MbReadAntiMsg();
 
     pdesmasType GetType() const;
 
@@ -22,4 +22,4 @@ namespace pdesmas {
   };
 }
 
-#endif //PDES_MAS_MBANTIREADMSG_H
+#endif //PDES_MAS_MBREADANTIMSG_H

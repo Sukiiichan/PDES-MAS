@@ -138,8 +138,8 @@ void Alp::Send() {
             PreProcessSendMessage(static_cast<MbReadResponseMsg *> (message));
          }
             break;
-         case MBANTIREADMSG: {
-            PreProcessSendMessage(static_cast<MbAntiReadMsg *> (message));
+         case MBREADANTIMSG: {
+            PreProcessSendMessage(static_cast<MbReadAntiMsg *> (message));
          }
             break;
          case MAILBOXWRITEMESSAGE: {
@@ -152,8 +152,8 @@ void Alp::Send() {
             PreProcessSendMessage(static_cast<MbWriteResponseMsg *> (message));
          }
             break;
-         case MBANTIWRITEMSG: {
-            PreProcessSendMessage(static_cast<MbAntiWriteMsg *> (message));
+         case MBWRITEANTIMSG: {
+            PreProcessSendMessage(static_cast<MbWriteAntiMsg *> (message));
          }
             break;
 
@@ -477,7 +477,7 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
                break;
             case MAILBOXREADMESSAGE: {
                MailboxReadMessage *mailboxReadMessage = static_cast<MailboxReadMessage *>(*iter);
-               MbAntiReadMsg *mbAntiReadMsg = new MbAntiReadMsg();
+               MbReadAntiMsg *mbAntiReadMsg = new MbReadAntiMsg();
                mbAntiReadMsg->SetOrigin(GetRank());
                mbAntiReadMsg->SetDestination(GetParentClp());
                mbAntiReadMsg->SetTimestamp(mailboxReadMessage->GetTimestamp());
@@ -489,7 +489,7 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
                break;
             case MAILBOXWRITEMESSAGE: {
                MailboxWriteMessage *mailboxWriteMessage = static_cast<MailboxWriteMessage *>(*iter);
-               MbAntiWriteMsg *mbAntiWriteMsg = new MbAntiWriteMsg();
+               MbWriteAntiMsg *mbAntiWriteMsg = new MbWriteAntiMsg();
                mbAntiWriteMsg->SetOrigin(GetRank());
                mbAntiWriteMsg->SetDestination(GetParentClp());
                mbAntiWriteMsg->SetTimestamp(mailboxWriteMessage->GetTimestamp());

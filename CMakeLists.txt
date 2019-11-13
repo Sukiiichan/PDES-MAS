@@ -98,8 +98,8 @@ add_library(PDESMAS SHARED
         src/messages/MbWriteResponseMsg.cpp
         src/messages/content/HasMBOwnerID.cpp
         src/messages/MbWriteResponseMsg.cpp
-        src/messages/MbAntiReadMsg.cpp
-        src/messages/MbAntiWriteMsg.cpp
+        src/messages/MbReadAntiMsg.cpp
+        src/messages/MbWriteAntiMsg.cpp
         src/parse/Initialisor.cpp
         src/rangequery/RangePeriod.cpp
         src/rangequery/RangePeriodListEntry.cpp

@@ -1,17 +1,17 @@
-#ifndef PDES_MAS_MBANTIWRITEMSG_H
-#define PDES_MAS_MBANTIWRITEMSG_H
+#ifndef PDES_MAS_MBWRITEANTIMSG_H
+#define PDES_MAS_MBWRITEANTIMSG_H
 
 #include "AntiMessage.h"
 #include "HasMBOwnerID.h"
 
 namespace pdesmas{
-   class MbAntiWriteMsg:public AntiMessage,public HasMBOwnerID{
+   class MbWriteAntiMsg: public AntiMessage, public HasMBOwnerID{
    private:
       static AbstractMessage* CreateInstance();
 
    public:
-      MbAntiWriteMsg();
-      virtual ~MbAntiWriteMsg();
+      MbWriteAntiMsg();
+      virtual ~MbWriteAntiMsg();
 
       pdesmasType GetType() const;
 
@@ -20,4 +20,4 @@ namespace pdesmas{
    };
 }
 
-#endif //PDES_MAS_MBANTIWRITEMSG_H
+#endif //PDES_MAS_MBWRITEANTIMSG_H

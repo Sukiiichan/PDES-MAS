@@ -31,6 +31,7 @@ namespace pdesmas {
 
     map<unsigned int, Range> fClpIdRangeMap;
     map<unsigned int, list<SsvId> > fClpIdSsvIdMap;
+    map<unsigned int, list<unsigned long>> fClpAgentIdMbMap;
     map<unsigned int, unsigned int> fAlpToClpMap;
     map<SsvId, AbstractValue *> fClpSsvIdValueMap;
 
@@ -70,6 +71,8 @@ namespace pdesmas {
     const map<unsigned int, unsigned int> &GetAlpToClpMap() const;
 
     const map<SsvId, AbstractValue *> &GetClpSsvIdValueMap() const;
+
+    const map<unsigned int, list<unsigned long>> &GetClpAgentIdMbMap() const;
   };
 }
 

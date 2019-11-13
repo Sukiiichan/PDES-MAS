@@ -43,7 +43,7 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
   fSharedState.SetAccessCostCalculator(fAccessCostCalculator);
   fStopLoadBalanceProcessing = false;
 #endif
-
+   // TODO add preload mbv
   auto ssv_id_value_map = initialisor->GetClpSsvIdValueMap(); // insert initial values
   auto clp_id_ssv_id_map = initialisor->GetClpToSsvMap();
   auto ssv_it = clp_id_ssv_id_map.find(this->GetRank());
@@ -165,8 +165,8 @@ void Clp::Send() {
          PreProcessSendMessage(mbReadResponseMsg);
       }
          break;
-      case MBANTIREADMSG:
-         PreProcessSendMessage(static_cast<MbAntiReadMsg *>(sendMessage));
+      case MBREADANTIMSG:
+         PreProcessSendMessage(static_cast<MbReadAntiMsg *>(sendMessage));
          break;
       case MAILBOXWRITEMESSAGE:
          PreProcessSendMessage(static_cast<MailboxWriteMessage *>(sendMessage));
@@ -177,8 +177,8 @@ void Clp::Send() {
          PreProcessSendMessage(mbWriteResponseMsg);
       }
          break;
-      case MBANTIWRITEMSG:
-         PreProcessSendMessage(static_cast<MbAntiWriteMsg *>(sendMessage));
+      case MBWRITEANTIMSG:
+         PreProcessSendMessage(static_cast<MbWriteAntiMsg *>(sendMessage));
          break;
       case RANGEQUERYMESSAGE :
          PreProcessSendMessage(static_cast<RangeQueryMessage *> (sendMessage));
@@ -316,8 +316,8 @@ void Clp::Receive() {
          }
       }
          break;
-      case MBANTIREADMSG: {
-         MbAntiReadMsg *mbAntiReadMsg = static_cast<MbAntiReadMsg *>(receivedMessage);
+      case MBREADANTIMSG: {
+         MbReadAntiMsg *mbAntiReadMsg = static_cast<MbReadAntiMsg *>(receivedMessage);
          mbAntiReadMsg->IncrementNumberOfHops();
          PreProcessReceiveMessage(mbAntiReadMsg);
          if (fRouter->Route(mbAntiReadMsg)) {
@@ -329,9 +329,9 @@ void Clp::Receive() {
          }
       }
          break;
-      case MBANTIWRITEMSG: {
-         MbAntiWriteMsg *mbAntiWriteMsg =
-               static_cast<MbAntiWriteMsg *> (receivedMessage);
+      case MBWRITEANTIMSG: {
+         MbWriteAntiMsg *mbAntiWriteMsg =
+               static_cast<MbWriteAntiMsg *> (receivedMessage);
          mbAntiWriteMsg->IncrementNumberOfHops();
          PreProcessReceiveMessage(mbAntiWriteMsg);
          if (fRouter->Route(mbAntiWriteMsg)) {
@@ -570,7 +570,7 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
 #endif
 }
 
-void Clp::ProcessMessage(const MbAntiReadMsg *pMbAntiReadMsg) {
+void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
    if (fGVT > pMbAntiReadMsg->GetTimestamp()) {
       LOG(logERROR) << "";
       return;
@@ -585,7 +585,7 @@ void Clp::ProcessMessage(const MbAntiReadMsg *pMbAntiReadMsg) {
                                     pMbAntiReadMsg->GetNumberOfHops());
 }
 
-void Clp::ProcessMessage(const MbAntiWriteMsg *pMbAntiWriteMsg) {
+void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
    if (fGVT > pMbAntiWriteMsg->GetTimestamp()) {
       LOG(logERROR) << "";
       return;

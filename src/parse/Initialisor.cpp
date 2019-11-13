@@ -177,6 +177,10 @@ const map<SsvId, AbstractValue *> &Initialisor::GetClpSsvIdValueMap() const {
   return fClpSsvIdValueMap;
 }
 
+const map<unsigned int, list<unsigned long>> &Initialisor::GetClpAgentIdMbMap() const {
+   return fClpAgentIdMbMap;
+}
+
 void Initialisor::ParseMessage(const string pLine) const {
   string messageName = pLine.substr(9, pLine.size());
   if (messageName.compare("SingleReadMessage") == 0) {
@@ -357,6 +361,13 @@ void Initialisor::InitEverything() {
   WriteMessage();
   WriteResponseMessage();
   WriteAntiMessage();
+  MailboxReadMessage();
+  MbReadResponseMsg();
+  MbReadAntiMsg();
+  MailboxWriteMessage();
+  MbWriteResponseMsg();
+  MbReadAntiMsg();
+  MbWriteAntiMsg();
   GvtControlMessage();
   GvtRequestMessage();
   GvtValueMessage();

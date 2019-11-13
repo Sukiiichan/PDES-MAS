@@ -64,7 +64,7 @@ void MailboxVariable::PerformWriteRB(const LpId &pSender, unsigned long pTime, R
        pRollbackList.AddLp(this->ownerAgent,pTime);
    }
 
-    // TODO may handle RB
+    // TODO handle RB
 }
 
 bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender) {

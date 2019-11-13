@@ -36,8 +36,8 @@ namespace pdesmas {
       WRITERESPONSEMESSAGE = 19,
       MAILBOXREADMESSAGE = 20,
       MAILBOXWRITEMESSAGE = 21,
-      MBANTIREADMSG = 22,
-      MBANTIWRITEMSG = 23,
+      MBREADANTIMSG = 22,
+      MBWRITEANTIMSG = 23,
       MBREADRESPONSEMSG = 24,
       MBWRITERESPONSEMSG = 25
    };
@@ -68,8 +68,8 @@ namespace pdesmas {
          case WRITERESPONSEMESSAGE : pType = WRITERESPONSEMESSAGE; break;
          case MAILBOXREADMESSAGE : pType = MAILBOXREADMESSAGE; break;
          case MAILBOXWRITEMESSAGE : pType = MAILBOXWRITEMESSAGE; break;
-         case MBANTIREADMSG:pType = MBANTIREADMSG; break;
-         case MBANTIWRITEMSG:pType = MBANTIWRITEMSG; break;
+         case MBREADANTIMSG:pType = MBREADANTIMSG; break;
+         case MBWRITEANTIMSG:pType = MBWRITEANTIMSG; break;
          case MBREADRESPONSEMSG:pType = MBREADRESPONSEMSG;break;
          case MBWRITERESPONSEMSG:pType = MBWRITERESPONSEMSG;break;
       }

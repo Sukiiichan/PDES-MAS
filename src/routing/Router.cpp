@@ -127,7 +127,7 @@ bool Router::Route(MailboxWriteMessage *pMailboxWriteMessage) {
    return false;
 }
 
-bool Router::Route(MbAntiReadMsg *pMbAntiReadMsg) {
+bool Router::Route(MbReadAntiMsg *pMbAntiReadMsg) {
    const unsigned long pOwnerId = pMbAntiReadMsg->GetMbOwnerId();
    Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
@@ -141,7 +141,7 @@ bool Router::Route(MbAntiReadMsg *pMbAntiReadMsg) {
    return false;
 }
 
-bool Router::Route(MbAntiWriteMsg *pMbAntiWriteMsg) {
+bool Router::Route(MbWriteAntiMsg *pMbAntiWriteMsg) {
    const unsigned long pOwnerId = pMbAntiWriteMsg->GetMbOwnerId();
    Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){

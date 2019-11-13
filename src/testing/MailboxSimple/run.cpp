@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
          .attach_alp_to_clp(20, 10)
          .attach_alp_to_clp(21, 10)
 
-               // .preload_variable()
+         .preload_variable(1,1,1)
 
          .Initialise();
 
