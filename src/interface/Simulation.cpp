@@ -112,13 +112,23 @@ string Simulation::type() {
 }
 
 void Simulation::add_agent(Agent *agent) {
+  // TODO init mailbox variable after add agent
   if (this->alp_ != nullptr) {
     this->alp_->AddAgent(agent);
+    // initialisor_->preload_variable();
+
   } else {
     spdlog::error("Agent is nullptr!");
     exit(1);
   }
 }
+
+
+Simulation &Simulation::init_mailbox(unsigned long agentId, int clpId) {
+  initialisor_->preload_mailbox(agentId, clpId);
+  return *this;
+}
+
 
 Simulation &Simulation::preload_variable(unsigned long ssvId, int v, int clpId) {
 
@@ -146,8 +156,8 @@ Simulation &Simulation::preload_variable(unsigned long ssvId, string v, int clpI
   return *this;
 }
 
-Simulation& Simulation::preload_variable(unsigned long agentId, int clpId) {
-
-  // TODO complete preload without mbvId
-  //  initialisor_->preload_variable();
-}
+//Simulation &Simulation::preload_variable(unsigned long agentId, int clpId) {
+//
+//  // TODO complete preload without mbvId
+//    initialisor_->preload_variable();
+//}

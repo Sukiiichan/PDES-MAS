@@ -48,8 +48,8 @@ public:
 
 class Simulation {
 private:
-  Alp *alp_= nullptr;
-  Clp *clp_= nullptr;
+  Alp *alp_ = nullptr;
+  Clp *clp_ = nullptr;
   int comm_rank_;
   int comm_size_;
   int number_of_clp_;
@@ -81,8 +81,10 @@ public:
 
   Simulation &preload_variable(unsigned long ssvId, string v, int clpId);
 
-  Simulation &preload_variable(unsigned long agentId, int clpId);
-  // may use MbSS to set initial value
+//  Simulation &preload_variable(unsigned long agentId, int clpId);
+//  // may use MbSS to set initial value
+
+  Simulation &init_mailbox(unsigned long agentId, int clpId);
 
   void Run();
 

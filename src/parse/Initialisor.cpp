@@ -44,10 +44,19 @@ Initialisor::~Initialisor() {
   fClpIdSsvIdMap.clear();
   fAlpToClpMap.clear();
   fClpSsvIdValueMap.clear();
+  fClpIdAgentMbIdMap.clear();
 }
 
 void Initialisor::attach_alp_to_clp(int alp, int clp) {
   fAlpToClpMap[alp] = clp;
+}
+
+void Initialisor::preload_mailbox(unsigned long agentId, unsigned int clpId) {
+  auto mbvId = agentId;
+  if(fClpIdAgentMbIdMap.find(clpId) == fClpIdAgentMbIdMap.end()){
+    fClpIdAgentMbIdMap.insert(make_pair(clpId, list<unsigned long>()));
+  }
+  fClpIdAgentMbIdMap[clpId].push_back(mbvId);
 }
 
 void Initialisor::preload_variable(const string &type, unsigned long variable_id, const string &v, unsigned int clpId) {
@@ -73,6 +82,7 @@ void Initialisor::preload_variable(const string &type, unsigned long variable_id
   }
   auto ssvID = SsvId(variable_id);
   fClpSsvIdValueMap.insert(make_pair(ssvID, value));
+
   if (fClpIdSsvIdMap.find(clpId) == fClpIdSsvIdMap.end()) {
     fClpIdSsvIdMap.insert(make_pair(clpId, list<SsvId>()));
   }
@@ -178,7 +188,7 @@ const map<SsvId, AbstractValue *> &Initialisor::GetClpSsvIdValueMap() const {
 }
 
 const map<unsigned int, list<unsigned long>> &Initialisor::GetClpAgentIdMbMap() const {
-   return fClpAgentIdMbMap;
+  return fClpIdAgentMbIdMap;
 }
 
 void Initialisor::ParseMessage(const string pLine) const {
@@ -189,6 +199,12 @@ void Initialisor::ParseMessage(const string pLine) const {
     SingleReadResponseMessage();
   } else if (messageName.compare("SingleReadAntiMessage") == 0) {
     SingleReadAntiMessage();
+  } else if (messageName.compare("MailboxReadMessage") == 0) {
+    MailboxReadMessage();
+  } else if (messageName.compare("MbReadResponseMsg") == 0) {
+    MbReadResponseMsg();
+  } else if (messageName.compare("MbReadAntiMsg") == 0) {
+    MbReadAntiMsg();
   } else if (messageName.compare("RangeQueryMessage") == 0) {
     RangeQueryMessage();
   } else if (messageName.compare("RangeQueryAntiMessage") == 0) {
@@ -199,6 +215,12 @@ void Initialisor::ParseMessage(const string pLine) const {
     WriteResponseMessage();
   } else if (messageName.compare("WriteAntiMessage") == 0) {
     WriteAntiMessage();
+  } else if (messageName.compare("MailboxWriteMessage") == 0) {
+    MailboxWriteMessage();
+  } else if (messageName.compare("MbWriteResponseMsg") == 0) {
+    MbWriteResponseMsg();
+  } else if (messageName.compare("MbWriteAntiMsg") == 0) {
+    MbWriteAntiMsg();
   } else if (messageName.compare("GvtControlMessage") == 0) {
     GvtControlMessage();
   } else if (messageName.compare("GvtRequestMessage") == 0) {
@@ -376,5 +398,6 @@ void Initialisor::InitEverything() {
   RangeUpdateMessage();
   EndMessage();
 }
+
 
 
