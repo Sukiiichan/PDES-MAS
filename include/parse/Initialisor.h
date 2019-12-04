@@ -74,7 +74,7 @@ namespace pdesmas {
 
     const map<SsvId, AbstractValue *> &GetClpSsvIdValueMap() const;
 
-    const map<unsigned int, list<unsigned long>> &GetClpAgentIdMbMap() const;
+    const map<unsigned int, list<unsigned long>> &GetClpToMbMap() const;
   };
 }
 

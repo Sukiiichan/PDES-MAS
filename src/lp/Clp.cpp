@@ -54,6 +54,15 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
     }
   }
 
+  auto clp_id_agentmb_id_map = initialisor->GetClpToMbMap();
+  auto mb_iter = clp_id_agentmb_id_map.find(this->GetRank());
+  if(mb_iter != clp_id_agentmb_id_map.end()){
+    auto mbv_list = mb_iter->second;
+    for(auto &iter : mbv_list){
+      this->AddMailbox(iter);
+    }
+  }
+
   fRouter = new Router(GetRank(), GetNumberOfClps(), initialisor);
 
   fMPIInterface = new MpiInterface(this, this);
@@ -85,6 +94,13 @@ void Clp::AddSSV(const SsvId &pSSVID, const AbstractValue *pValue) {
   // TODO Fix initialisation of the first write period
   fSharedState.Add(pSSVID, pValue, fStartTime, LpId(0, 0));
 }
+
+void Clp::AddMailbox(unsigned long MbvId) {
+  auto mbvId = SsvId(MbvId);
+  // mbvId equals agentId
+  fMbSharedState.Add(mbvId,LpId(MbvId,0));
+}
+
 
 void Clp::SetGvt(unsigned long pGVT) {
   // Set GVT

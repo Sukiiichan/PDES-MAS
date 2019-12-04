@@ -36,7 +36,7 @@ namespace pdesmas {
 
         void UpdateAccessCount(const SsvId &, Direction, unsigned long);
 
-        void Add(const SsvId &pSsvId, unsigned long pTime, const LpId &pAgent);
+        void Add(const SsvId &pSsvId, const LpId &pAgent);
 
         void Insert(const SsvId &, const MailboxVariable &, RollbackList &);
 

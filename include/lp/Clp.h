@@ -77,6 +77,7 @@ namespace pdesmas {
       ~Clp();
 
       void AddSSV(const SsvId&, const AbstractValue*);
+      void AddMailbox(unsigned long MbvId);
       void SetGvt(unsigned long);
       void Send();
       void Receive();

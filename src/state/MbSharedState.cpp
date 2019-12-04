@@ -58,13 +58,14 @@ bool MbSharedState::WriteMbMsg(const LpId &pSender, const unsigned long pReceive
    return false;
 }
 
-void MbSharedState::Add(const SsvId &pSsvId, unsigned long pTime, const LpId &pAgent) {
+void MbSharedState::Add(const SsvId &pSsvId, const LpId &pAgent) {
    if (ContainsVariable(pSsvId)) {
       LOG(logERROR) << "";
       exit(1);
    }
    fAgentIdToRankMap[pAgent.GetId()]=pAgent.GetRank();
    MailboxVariable newMailboxVariable(pSsvId, pAgent);
+
    MailboxVariableMap[pSsvId] = newMailboxVariable;
    MailboxAgentMap[pAgent.GetId()] = pSsvId;
 }

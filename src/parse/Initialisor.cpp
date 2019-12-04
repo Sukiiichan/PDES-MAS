@@ -187,7 +187,7 @@ const map<SsvId, AbstractValue *> &Initialisor::GetClpSsvIdValueMap() const {
   return fClpSsvIdValueMap;
 }
 
-const map<unsigned int, list<unsigned long>> &Initialisor::GetClpAgentIdMbMap() const {
+const map<unsigned int, list<unsigned long>> &Initialisor::GetClpToMbMap() const {
   return fClpIdAgentMbIdMap;
 }
 
