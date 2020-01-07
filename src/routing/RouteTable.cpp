@@ -14,15 +14,18 @@ RouteTable::~RouteTable() {
   fRankToDirectionMap.clear();
   fDirectionToRankMap.clear();
   fSSVIDToDirectionMap.clear();
+  fMbIdToDirectionMap.clear();
 }
 
 RouteTable::RouteTable(unsigned int pLpRank, unsigned int pNumberOfClps, const Initialisor* pInitialisor) {
   //spdlog::info("Route table init");
   ForwardingTable forwardingTable = ForwardingTable(pLpRank, pNumberOfClps);
   map<unsigned int, list<SsvId> > clpToSsvMap = pInitialisor->GetClpToSsvMap();
-  map<unsigned int, list<SsvId> >::iterator clpIdSsvIdMapIterator;
+  map<unsigned int, list<unsigned long>> clpIdAgentMbIdMap=pInitialisor->GetClpToMbMap();
+  //map<unsigned int, list<SsvId> >::iterator clpIdSsvIdMapIterator;
+  //map<unsigned int, list<unsigned long>>::iterator clpIdAgentMbIdMapIterator;
   //spdlog::info("clpToSsvMap {0}",clpToSsvMap.size());
-  for(clpIdSsvIdMapIterator = clpToSsvMap.begin(); clpIdSsvIdMapIterator != clpToSsvMap.end(); ++clpIdSsvIdMapIterator) {
+  for(auto clpIdSsvIdMapIterator = clpToSsvMap.begin(); clpIdSsvIdMapIterator != clpToSsvMap.end(); ++clpIdSsvIdMapIterator) {
     list<SsvId>::iterator ssvIdListIterator;
     for(ssvIdListIterator = clpIdSsvIdMapIterator->second.begin(); ssvIdListIterator != clpIdSsvIdMapIterator->second.end(); ++ssvIdListIterator) {
       if (clpIdSsvIdMapIterator->first == pLpRank) {
@@ -40,11 +43,34 @@ RouteTable::RouteTable(unsigned int pLpRank, unsigned int pNumberOfClps, const I
           LOG(logWARNING) << "RouteTable::RouteTable# Could not find direction for SSVID while initialising: SSVID: " << *ssvIdListIterator << ", next CLP: " << nextClp << ", this LP: " << pLpRank;
         }
       }
-      //spdlog::info("fSSVIDToDirectionMap {0}",fSSVIDToDirectionMap.size());
     }
   }
 
+  for(auto clpIdAgentMbIdMapIterator = clpIdAgentMbIdMap.begin(); clpIdAgentMbIdMapIterator != clpIdAgentMbIdMap.end(); ++clpIdAgentMbIdMapIterator) {
+    list<unsigned long>::iterator agentIdListIterator;
+    for(agentIdListIterator = clpIdAgentMbIdMapIterator->second.begin(); agentIdListIterator != clpIdAgentMbIdMapIterator->second.end(); ++agentIdListIterator) {
+      if (clpIdAgentMbIdMapIterator->first == pLpRank) {
+        fMbIdToDirectionMap.insert(make_pair(*agentIdListIterator, HERE));
+      } else {
+        RoutingInfo routingInfo = forwardingTable.GetRoutingInfo(clpIdAgentMbIdMapIterator->first);
+        unsigned int nextClp = routingInfo.GetNextNodeRank();
+        if (nextClp == ((pLpRank - 1) / 2)) {
+          fMbIdToDirectionMap.insert(make_pair(*agentIdListIterator, UP));
+        } else if (nextClp == ((pLpRank * 2) + 1)) {
+          fMbIdToDirectionMap.insert(make_pair(*agentIdListIterator, LEFT));
+        } else if (nextClp == ((pLpRank * 2) + 2)) {
+          fMbIdToDirectionMap.insert(make_pair(*agentIdListIterator, RIGHT));
+        } else {
+          LOG(logWARNING) << "RouteTable::RouteTable# Could not find direction for SSVID while initialising: SSVID: " << *agentIdListIterator << ", next CLP: " << nextClp << ", this LP: " << pLpRank;
+        }
+      }
+    }
+  }
+
+
+
   fRankToDirectionMap[pLpRank] = HERE;
+
   Direction direction;
   if (pLpRank == 0) direction = LEFT;
   else direction = UP;
@@ -110,9 +136,15 @@ void RouteTable::SetSsvIdHost(SsvId pSSVID, Direction pDirection) {
 }
 
 Direction RouteTable::GetDirectionFromMbOwnerId(const unsigned long pOwnerId) const {
-   SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
-   auto directionMapIterator = fSSVIDToDirectionMap.find(mbvId);
-   if(directionMapIterator != fSSVIDToDirectionMap.end()){
+   //SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
+//  SsvId mbvId = SsvId(pOwnerId);
+//  spdlog::debug("--------size of fMbIdToDirectionMap: {}",fMbIdToDirectionMap.size());
+//  for(auto it:fMbIdToDirectionMap){
+//    spdlog::debug("--------{},{}",it.first,it.second);
+//  }
+
+  auto directionMapIterator = fMbIdToDirectionMap.find(pOwnerId);
+   if(directionMapIterator != fMbIdToDirectionMap.end()){
       return directionMapIterator->second;
    }
    LOG(logERROR) <<"GetDirectionFromMbOwnerId("<<pOwnerId<<") no direction found";

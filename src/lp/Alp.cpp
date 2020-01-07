@@ -132,6 +132,8 @@ void Alp::Send() {
             MailboxReadMessage *mailboxReadMessage = static_cast<MailboxReadMessage *>(message);
             AddToSendList(mailboxReadMessage);
             PreProcessSendMessage(mailboxReadMessage);
+           agent_response_message_id_map_[mailboxReadMessage->GetOriginalAgent().GetId()] = mailboxReadMessage->GetIdentifier();
+
          }
             break;
          case MBREADRESPONSEMSG: {
@@ -143,9 +145,11 @@ void Alp::Send() {
          }
             break;
          case MAILBOXWRITEMESSAGE: {
-            MailboxWriteMessage *mailboxwriteMessage = static_cast<MailboxWriteMessage *>(message);
-            AddToSendList(mailboxwriteMessage);
-            PreProcessSendMessage(mailboxwriteMessage);
+            MailboxWriteMessage *mailboxWriteMessage = static_cast<MailboxWriteMessage *>(message);
+            AddToSendList(mailboxWriteMessage);
+            PreProcessSendMessage(mailboxWriteMessage);
+           agent_response_message_id_map_[mailboxWriteMessage->GetOriginalAgent().GetId()] = mailboxWriteMessage->GetIdentifier();
+
          }
             break;
          case MBWRITERESPONSEMSG: {

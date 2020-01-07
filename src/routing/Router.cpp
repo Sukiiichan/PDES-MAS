@@ -100,7 +100,7 @@ void Router::SetSsvIdDirection(SsvId SsvID, Direction pDirection) {
 }
 
 bool Router::Route(MailboxReadMessage *pMailboxReadMessage) {
-   const unsigned long pOwnerId = pMailboxReadMessage->GetMbOwnerId();
+   const unsigned long pOwnerId = pMailboxReadMessage->GetOriginalAgent().GetId();
    Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
       LOG(logERROR)<<"No route found MailboxReadMessage"<<*pMailboxReadMessage;

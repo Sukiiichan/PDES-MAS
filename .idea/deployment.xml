@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Remote Host (54b5c7cc-cbea-4bb7-b543-16f4c588903f)">
+    <serverData>
+      <paths name="Remote Host (54b5c7cc-cbea-4bb7-b543-16f4c588903f)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/tmp.d9yf4DKTwr" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="WSL (433e044e-ac75-43d8-a183-10bddeb72eeb)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

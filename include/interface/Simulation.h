@@ -88,7 +88,7 @@ public:
 //  Simulation &preload_variable(unsigned long agentId, int clpId);
 //  // may use MbSS to set initial value
 
-  Simulation &init_mailbox(unsigned long agentId, int clpId);
+  Simulation &init_mailbox(unsigned long agentId, int agentRank, int clpId);
 
   void Run();
 

@@ -17,9 +17,9 @@ void MbAgent::InitSendList(unsigned int totalNum, unsigned int listLen, unsigned
    list<unsigned long> rList;
    srand(seed * agentId);
    vector<unsigned int> temp;
-   for (int i = 0; i < totalNum; ++i) { temp.push_back(i); }
+   for (unsigned int i = 0; i < totalNum; ++i) { temp.push_back(i); }
    random_shuffle(temp.begin(), temp.end());
-   for (int j = 0; j < listLen; ++j) {
+   for (unsigned int j = 0; j < listLen; ++j) {
       rList.push_back(temp[j]);
    }
    sendList = rList;
@@ -50,14 +50,14 @@ void MbAgent::Cycle() {
 
    // read msg from mailbox, and see if received reply msg
    spdlog::debug("Agent{0}, request to read mailbox", this->agentId);
-   SerialisableList<MbMail> newMails = this->RequestNewMails(agentId, this->GetAlpLVT() + 1);
+   SerialisableList<MbMail> newMails = this->RequestNewMails(agentId, this->GetLVT() + 1);
    // can modify RequestNewMails() to check type
    spdlog::debug("Agent{0}, read mailbox success", this->agentId);
    // FIXME may need to print log in Agent.cpp instead
    auto newMailIterator = newMails.begin();
    while(newMailIterator != newMails.end()){
       unsigned long sender = newMailIterator->GetSender().GetId();
-      unsigned long timestamp = newMailIterator->GetTime();
+      //unsigned long timestamp = newMailIterator->GetTime();
 
       auto msgContentType = newMailIterator->GetValue()->GetType();
       assert(msgContentType == VALUESTRING);

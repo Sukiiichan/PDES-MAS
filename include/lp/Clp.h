@@ -56,7 +56,8 @@ namespace pdesmas {
       void Finalise();
 
 #ifdef SSV_LOCALISATION
-      AccessCostCalculator* fAccessCostCalculator;
+    AccessCostCalculator* fAccessCostCalculator;
+    AccessCostCalculator* fMbAccessCostCalculator;
       bool fStopLoadBalanceProcessing;
       void ProcessMessage(const StateMigrationMessage*);
       void MigrateStateVariables(const map<Direction, list<SsvId> >&);

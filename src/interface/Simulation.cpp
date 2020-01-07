@@ -144,8 +144,8 @@ void Simulation::add_agent(Agent *agent) {
 }
 
 
-Simulation &Simulation::init_mailbox(unsigned long agentId, int clpId) {
-  initialisor_->preload_mailbox(agentId, clpId);
+Simulation &Simulation::init_mailbox(unsigned long agentId,int alpRank, int clpId) {
+  initialisor_->preload_mailbox(agentId, alpRank,clpId);
   return *this;
 }
 

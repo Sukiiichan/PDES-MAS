@@ -40,7 +40,9 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
 #ifdef SSV_LOCALISATION
   fAccessCostCalculator
       = new AccessCostCalculator(GetRank(), GetNumberOfClps());
+  fMbAccessCostCalculator=new AccessCostCalculator(GetRank(), GetNumberOfClps());
   fSharedState.SetAccessCostCalculator(fAccessCostCalculator);
+  fMbSharedState.SetAccessCostCalculator(fMbAccessCostCalculator);
   fStopLoadBalanceProcessing = false;
 #endif
    // TODO add preload mbv

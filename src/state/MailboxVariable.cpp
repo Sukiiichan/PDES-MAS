@@ -150,7 +150,8 @@ SerialisableList<MbMail> MailboxVariable::ReadMb(const unsigned long reqAgentId,
    SerialisableList<MbMail> mailList;
    if (reqAgentId == ownerAgentId) {
       // or check map
-      if (reqTime >= readUntil && reqTime <= messageList.end()->GetTime()) {
+     //if (reqTime >= readUntil && reqTime <= messageList.end()->GetTime()) {
+       if (reqTime >= readUntil) {
          auto mbMessageIterator = messageList.begin();
          while (mbMessageIterator != messageList.end()) {
             if (mbMessageIterator->GetTime() > reqTime) {

@@ -60,7 +60,7 @@ namespace pdesmas {
 
     void attach_alp_to_clp(int alp, int clp);
 
-    void preload_mailbox(unsigned long agentId, unsigned int clpId);
+    void preload_mailbox(unsigned long agentId, int agentRank,int clpId);
 
     void preload_variable(const string &type, unsigned long variable_id, const string &value, unsigned int clpId);
 

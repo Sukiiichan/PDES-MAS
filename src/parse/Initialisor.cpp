@@ -57,7 +57,7 @@ void Initialisor::attach_alp_to_clp(int alp, int clp) {
   fAlpToClpMap[alp] = clp;
 }
 
-void Initialisor::preload_mailbox(unsigned long agentId, unsigned int clpId) {
+void Initialisor::preload_mailbox(unsigned long agentId, int agentRank,int clpId) {
   auto mbvId = agentId;
   if(fClpIdAgentMbIdMap.find(clpId) == fClpIdAgentMbIdMap.end()){
     fClpIdAgentMbIdMap.insert(make_pair(clpId, list<unsigned long>()));

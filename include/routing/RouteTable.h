@@ -14,29 +14,39 @@
 #include "Direction.h"
 #include "SsvId.h"
 #include "LpId.h"
+
 using namespace std;
 
 namespace pdesmas {
   class Initialisor;
 
   class RouteTable {
-    private:
-      map<unsigned int, Direction> fRankToDirectionMap;
-      map<Direction, unsigned int> fDirectionToRankMap;
-      map<SsvId, Direction> fSSVIDToDirectionMap;
-     map<unsigned long, SsvId> MailboxAgentMap; // map agentid with mailbox variable id, same as the map in mbsharedstate
+  private:
+    map<unsigned int, Direction> fRankToDirectionMap;
+    map<Direction, unsigned int> fDirectionToRankMap;
+    map<SsvId, Direction> fSSVIDToDirectionMap;
+    map<unsigned long, Direction> fMbIdToDirectionMap;
+    map<unsigned long, SsvId> MailboxAgentMap; // map agentid with mailbox variable id, same as the map in mbsharedstate
 
 
   public:
-      RouteTable();
-      ~RouteTable();
-      RouteTable(unsigned int, unsigned int, const Initialisor*);
-      void SetMailboxAgentMap(const map<unsigned long , SsvId>&);
-      Direction GetDirectionFromMbOwnerId(const unsigned long pOwnerId) const;
-      Direction GetDirectionFromSsvId(const SsvId&) const;
-      Direction GetDirectionFromRank(unsigned int) const;
-      unsigned int GetRankFromDirection(const Direction) const;
-      void SetSsvIdHost(SsvId, Direction);
+    RouteTable();
+
+    ~RouteTable();
+
+    RouteTable(unsigned int, unsigned int, const Initialisor *);
+
+    void SetMailboxAgentMap(const map<unsigned long, SsvId> &);
+
+    Direction GetDirectionFromMbOwnerId(const unsigned long pOwnerId) const;
+
+    Direction GetDirectionFromSsvId(const SsvId &) const;
+
+    Direction GetDirectionFromRank(unsigned int) const;
+
+    unsigned int GetRankFromDirection(const Direction) const;
+
+    void SetSsvIdHost(SsvId, Direction);
   };
 }
 #endif
