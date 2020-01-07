@@ -103,7 +103,7 @@ bool Router::Route(MailboxReadMessage *pMailboxReadMessage) {
    const unsigned long pOwnerId = pMailboxReadMessage->GetMbOwnerId();
    Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
-      LOG(logERROR)<<""<<*pMailboxReadMessage;
+      LOG(logERROR)<<"No route found MailboxReadMessage"<<*pMailboxReadMessage;
       exit(1);
    }
    if(direction == HERE){
@@ -117,7 +117,7 @@ bool Router::Route(MailboxWriteMessage *pMailboxWriteMessage) {
    const unsigned long pOwnerId = pMailboxWriteMessage->GetMbOwnerId();
    Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
-      LOG(logERROR)<<""<<*pMailboxWriteMessage;
+      LOG(logERROR)<<"No direction found MailboxWriteMessage"<<*pMailboxWriteMessage;
       exit(1);
    }
    if(direction == HERE){
@@ -131,7 +131,7 @@ bool Router::Route(MbReadAntiMsg *pMbAntiReadMsg) {
    const unsigned long pOwnerId = pMbAntiReadMsg->GetMbOwnerId();
    Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
-      LOG(logERROR)<<""<<*pMbAntiReadMsg;
+      LOG(logERROR)<<"No direction found for MbAntiReadMsg"<<*pMbAntiReadMsg;
       exit(1);
    }
    if(direction == HERE){
@@ -145,7 +145,7 @@ bool Router::Route(MbWriteAntiMsg *pMbAntiWriteMsg) {
    const unsigned long pOwnerId = pMbAntiWriteMsg->GetMbOwnerId();
    Direction direction = fRouteTable.GetDirectionFromMbOwnerId(pOwnerId);
    if(direction == DIRECTION_SIZE){
-      LOG(logERROR)<<""<<*pMbAntiWriteMsg;
+      LOG(logERROR)<<"No direction found for MbAntiWriteMsg"<<*pMbAntiWriteMsg;
       exit(1);
    }
    if(direction == HERE){

@@ -78,10 +78,14 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
 
   // Wait for all CLPs and ALPs to come online
   MPI_Barrier(MPI_COMM_WORLD);
+
+  spdlog::debug("line 75 Route Added");
   // Initialise the MPI connections
   fMPIInterface->Signal();
   // Wait for all MPI connections to come online
   MPI_Barrier(MPI_COMM_WORLD);
+
+  spdlog::debug("line 81 Route Added");
 }
 
 void Clp::AddSSV(const SsvId &pSSVID, const AbstractValue *pValue) {

@@ -5,36 +5,48 @@ using namespace std;
 using namespace pdesmas;
 
 int main(int argc, char **argv) {
-   spdlog::set_level(spdlog::level::debug);
-   Simulation sim = Simulation();
-   // construct system tree
-   sim.Construct(15, 8, 0, 10000);
-   spdlog::info("MPI process up, rank {0}, size {1}", sim.rank(), sim.size());
+  spdlog::set_level(spdlog::level::debug);
+  Simulation sim = Simulation();
+  sim.InitMPI();
 
-   sim
-         .attach_alp_to_clp(7, 3)
-         .attach_alp_to_clp(8, 3)
-         .attach_alp_to_clp(9, 4)
-         .attach_alp_to_clp(10, 4)
-         .attach_alp_to_clp(11, 5)
-         .attach_alp_to_clp(12, 5)
-         .attach_alp_to_clp(13, 6)
-         .attach_alp_to_clp(14, 6)
-         .attach_alp_to_clp(15, 7)
-         .attach_alp_to_clp(15, 7)
-         .attach_alp_to_clp(16, 8)
-         .attach_alp_to_clp(17, 8)
-         .attach_alp_to_clp(18, 9)
-         .attach_alp_to_clp(19, 9)
-         .attach_alp_to_clp(20, 10)
-         .attach_alp_to_clp(21, 10)
+  // uint64_t numAgents = std::atoll(argv[1]);
+  uint64_t numAgents = 32;
+  uint64_t numMPI = sim.size();
+  // numMPI -> CLP and ALP
+  uint64_t numALP = (numMPI + 1) / 2;
+  uint64_t numCLP = numALP - 1;
 
-         .preload_variable(1,1,1)
+  // construct system tree; execution time
+  sim.Construct(numCLP, numALP, 0, 10000);
 
-         .Initialise();
+  for (int i = numCLP; i < numCLP + numALP; ++i) {
+    // attach alp tp clp
+    sim.attach_alp_to_clp(i, (i - 1) / 2);
+
+    spdlog::info("attached alp{0} to clp{1}", i, (i - 1) / 2);
+
+  }
+
+  for (int i = 0; i < numAgents; ++i) {
+    sim.init_mailbox(i, 0);
+    // put all mb in top node
+  }
+  spdlog::info("MPI process up, rank {0}, size {1}", sim.rank(), sim.size());
+
+  sim.Initialise();
+
+  spdlog::info("Initialized, rank {0}, is {1}", sim.rank(), sim.type());
+  if (sim.type() == "ALP") {
+    for (int i = 0; i < numAgents; ++i) {
+      MbAgent *mbAg = new MbAgent(0, 10000, 10000 + sim.rank() * 100 + 1 + i);
+      sim.add_agent(mbAg);
+
+    }
+  }
+
+  sim.Run();
+
+  spdlog::info("LP exit, rank {0}", sim.rank());
 
 
-
-
-   // TODO attach agent to ALP, attach ALP to CLP
 }

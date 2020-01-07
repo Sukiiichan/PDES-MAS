@@ -63,9 +63,13 @@ public:
 
   ~Simulation();
 
+  void InitMPI();
+
   void Construct(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time);
 
   void Initialise();
+
+
 
   Simulation &set_topology(const string &topo);
 

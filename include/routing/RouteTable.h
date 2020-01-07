@@ -31,7 +31,7 @@ namespace pdesmas {
       RouteTable();
       ~RouteTable();
       RouteTable(unsigned int, unsigned int, const Initialisor*);
-
+      void SetMailboxAgentMap(const map<unsigned long , SsvId>&);
       Direction GetDirectionFromMbOwnerId(const unsigned long pOwnerId) const;
       Direction GetDirectionFromSsvId(const SsvId&) const;
       Direction GetDirectionFromRank(unsigned int) const;

@@ -5,6 +5,8 @@
 #include <random>
 #include <ctime>
 #include <string>
+#include "MbSharedState.h"
+#include "RouteTable.h"
 
 using namespace pdesmas;
 using namespace std;
@@ -13,8 +15,7 @@ class MbAgent : public Agent {
 public:
 
 
-    MbAgent(const unsigned long startTime1, const unsigned long endTime1, unsigned long agentId1,
-            const unsigned long startTime, const unsigned long endTime, unsigned long agentId);
+    MbAgent(const unsigned long startTime, const unsigned long endTime, unsigned long agentId);
 
     void Cycle() override;
 

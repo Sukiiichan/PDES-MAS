@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 #include <lp/AccessCostCalculator.h>
+#include <rangequery/RangeRoutingTable.h>
 #include "MailboxVariable.h"
 
 using namespace std;
@@ -27,6 +28,8 @@ namespace pdesmas {
         MbSharedState();
 
         ~MbSharedState();
+
+        void SetMailboxAgentMap(const map<unsigned long , SsvId>&);
 
         vector<tuple<unsigned long, LpId>> GetMsgToRollback(const LpId &, unsigned long);
 

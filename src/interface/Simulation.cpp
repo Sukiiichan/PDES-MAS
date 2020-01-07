@@ -6,16 +6,24 @@
 #include "Simulation.h"
 #include <spdlog/spdlog.h>
 
+void Simulation::InitMPI() {
+  int flag;
+  MPI_Initialized(&flag);
+  if (!flag) {
+    int providedThreadSupport;
+    MPI_Init_thread(nullptr, nullptr, MPI_THREAD_SERIALIZED, &providedThreadSupport);
+    assert(providedThreadSupport == MPI_THREAD_SERIALIZED);
+  }
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_size_);
+  MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank_);
+}
+
 void Simulation::Construct(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time) {
+  InitMPI();
   number_of_clp_ = number_of_clp;
   number_of_alp_ = number_of_alp;
   start_time_ = start_time;
   end_time_ = end_time;
-  int providedThreadSupport;
-  MPI_Init_thread(nullptr, nullptr, MPI_THREAD_SERIALIZED, &providedThreadSupport);
-  assert(providedThreadSupport == MPI_THREAD_SERIALIZED);
-  MPI_Comm_size(MPI_COMM_WORLD, &comm_size_);
-  MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank_);
   for (int i = 0; i < number_of_alp + number_of_clp; ++i) {
     topology_[i] = new DummyNode();
   }
@@ -50,16 +58,28 @@ void Simulation::Initialise() {
   int clp_max_rank = number_of_clp_ - 1;
   int alp_max_rank = clp_max_rank + number_of_alp_;
 
-
   if (comm_rank_ <= clp_max_rank) { // this instance is CLP
     clp_ = new Clp(comm_rank_, comm_size_, number_of_clp_, number_of_alp_, start_time_, end_time_, initialisor_);
+    MPI_Barrier(MPI_COMM_WORLD);
   } else if (comm_rank_ <= alp_max_rank) { // is alp
+    MPI_Barrier(MPI_COMM_WORLD);
     alp_ = new Alp(comm_rank_, comm_size_, number_of_clp_, number_of_alp_, start_time_, end_time_, initialisor_);
-  } else {
-    spdlog::warn("Unused process, rank={0}", comm_rank_);
-    Finalise();
-    exit(0);
   }
+
+
+
+
+
+
+//  if (comm_rank_ <= clp_max_rank) { // this instance is CLP
+//    clp_ = new Clp(comm_rank_, comm_size_, number_of_clp_, number_of_alp_, start_time_, end_time_, initialisor_);
+//  } else if (comm_rank_ <= alp_max_rank) { // is alp
+//    alp_ = new Alp(comm_rank_, comm_size_, number_of_clp_, number_of_alp_, start_time_, end_time_, initialisor_);
+//  } else {
+//    spdlog::warn("Unused process, rank={0}", comm_rank_);
+//    Finalise();
+//    exit(0);
+//  }
 }
 
 void Simulation::Run() {

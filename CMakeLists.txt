@@ -127,7 +127,9 @@ add_library(PDESMAS SHARED
         src/state/PrivateVariableStorage.cpp include/messages/content/HasMailList.h src/messages/content/HasMailList.cpp)
 
 add_executable(runtest src/testing/TestAgent.cpp src/testing/run.cpp)
+add_executable(MailboxSimple src/testing/MailboxSimple/MbAgent.cpp src/testing/MailboxSimple/run.cpp)
 add_executable(tileworld src/testing/Tileworld/TileWorldAgent.cpp src/testing/Tileworld/run.cpp)
 target_link_libraries(runtest PDESMAS)
+target_link_libraries(MailboxSimple PDESMAS)
 target_link_libraries(tileworld PDESMAS)
 

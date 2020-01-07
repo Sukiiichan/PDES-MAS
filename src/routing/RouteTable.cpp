@@ -115,6 +115,10 @@ Direction RouteTable::GetDirectionFromMbOwnerId(const unsigned long pOwnerId) co
    if(directionMapIterator != fSSVIDToDirectionMap.end()){
       return directionMapIterator->second;
    }
-   LOG(logERROR) <<""<<pOwnerId;
+   LOG(logERROR) <<"GetDirectionFromMbOwnerId("<<pOwnerId<<") no direction found";
    return DIRECTION_SIZE;
+}
+
+void RouteTable::SetMailboxAgentMap(const map<unsigned long, SsvId> &maMap) {
+  MailboxAgentMap = maMap;
 }

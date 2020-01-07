@@ -3,8 +3,7 @@
 #include <unistd.h>
 #include <random>
 
-MbAgent::MbAgent(const unsigned long startTime, const unsigned long endTime, unsigned long agentId,
-                 const unsigned long start_Time, const unsigned long end_Time, unsigned long agent_Id) : Agent(
+MbAgent::MbAgent(const unsigned long startTime, const unsigned long endTime, unsigned long agentId) : Agent(
       startTime, endTime, agentId) {
 
 }

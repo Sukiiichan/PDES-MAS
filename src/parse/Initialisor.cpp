@@ -8,6 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "MailboxWriteMessage.h"
+#include "MailboxReadMessage.h"
+#include "MbWriteAntiMsg.h"
+#include "MbReadAntiMsg.h"
+#include "MbWriteResponseMsg.h"
+#include "MbReadResponseMsg.h"
 #include "SingleReadMessage.h"
 #include "SingleReadResponseMessage.h"
 #include "SingleReadAntiMessage.h"
@@ -397,6 +403,12 @@ void Initialisor::InitEverything() {
   StateMigrationMessage();
   RangeUpdateMessage();
   EndMessage();
+  MailboxWriteMessage();
+  MailboxReadMessage();
+  MbWriteResponseMsg();
+  MbReadResponseMsg();
+  MbReadAntiMsg();
+  MbWriteAntiMsg();
 }
 
 

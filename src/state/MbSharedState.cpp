@@ -148,3 +148,7 @@ int MbSharedState::GetRankFromAgentId(unsigned long agentId) {
 //
 //   return rollbackList;
 //}
+
+void MbSharedState::SetMailboxAgentMap(const map<unsigned long, SsvId> & maMap) {
+  MailboxAgentMap = maMap;
+}
