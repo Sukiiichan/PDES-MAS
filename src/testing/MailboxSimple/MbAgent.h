@@ -19,15 +19,14 @@ public:
 
     void Cycle() override;
 
-    void SetFrequency(unsigned int);
+    // void SetFrequency(unsigned int);
 
     void InitSendList(unsigned int totalNum, unsigned int listLen,unsigned int seed);
 
 
 private:
-    unsigned long mbcId;
-    unsigned int commFrequency;
-    unsigned int agentId;
+    unsigned int freqCounter;
+    unsigned int frequency;
     list<unsigned long> sendList;
 };
 

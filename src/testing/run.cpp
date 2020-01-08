@@ -13,24 +13,6 @@ int main(int argc, char **argv) {
   sim.Construct(7, 8, 0, 10000);
 
   spdlog::info("MPI process up, rank {0}, size {1}", sim.rank(), sim.size());
-  uint64_t numAgents = std::atoll(argv[1]);
-  uint64_t numMPI = sim.size();
-  // numMPI -> CLP and ALP
-  uint64_t numCLP = 0;
-  uint64_t numALP = 0;
-
-  for (int i = 0; i < numCLP; ++i) {
-    // attach
-    sim.attach_alp_to_clp();
-  }
-
-  for (int i = 0; i < numALP; ++i) {
-
-  }
-
-  sim.Initialise();
-
-
   sim
 //      .attach_alp_to_clp(1, 0)
 //      .attach_alp_to_clp(2, 0)
