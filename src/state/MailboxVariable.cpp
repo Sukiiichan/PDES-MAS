@@ -74,7 +74,6 @@ void MailboxVariable::PerformWriteRB(const LpId &pSender, unsigned long pTime, R
 }
 
 bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender) {
-  spdlog::debug("before:msg list len {0}, at {1}", messageList.size(), this->mbVariableID.id());
 
   if (pTime >= readUntil) {
     auto mbMessageIterator = messageList.begin();
@@ -93,7 +92,6 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
         ++mbMessageIterator;
       }
     }
-    spdlog::debug("after:msg list len {0}, at {1}", messageList.size(), this->mbVariableID.id());
     return true;
   } else {
     spdlog::warn("MB rollback condition met");

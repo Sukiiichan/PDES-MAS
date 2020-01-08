@@ -42,11 +42,11 @@ bool MbSharedState::WriteMbMsg(const LpId &pSender, const unsigned long pReceive
                                const AbstractValue *pValue) {
   //spdlog::debug("Total num of mbv: {}",MailboxVariableMap.size());
   SsvId dstId = MailboxAgentMap.find(pReceiverId)->second;
-  MailboxVariable dstMbv = MailboxVariableMap.find(dstId)->second;
+  MailboxVariable *dstMbv = MailboxVariableMap.find(dstId)->second;
   assert(MailboxVariableMap.find(dstId)!=MailboxVariableMap.end());
   // TODO see the variable in map
   //spdlog::debug("prepare to add msg to {0}", dstId.id());
-  return dstMbv.AddMbMessage(pValue, pTime, pSender);
+  return dstMbv->AddMbMessage(pValue, pTime, pSender);
 }
 //    auto mbWriteMapIter = MbWriteMap.find(pSender);
 //
@@ -74,9 +74,8 @@ void MbSharedState::Add(const SsvId &pSsvId, const LpId &pAgent) {
     exit(1);
   }
   fAgentIdToRankMap[pAgent.GetId()] = pAgent.GetRank();
-  MailboxVariable newMailboxVariable(pSsvId, pAgent);
 
-  MailboxVariableMap[pSsvId] = newMailboxVariable;
+  MailboxVariableMap[pSsvId] = new MailboxVariable(pSsvId, pAgent);
   MailboxAgentMap[pAgent.GetId()] = pSsvId;
 #ifdef SSV_LOCALISATION
   spdlog::debug("MbSharedState::Add({},({},{}))", pSsvId.id(), pAgent.GetId(), pAgent.GetRank());
@@ -91,7 +90,7 @@ void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariab
     exit(1);
   }
   const unsigned long pAgent = pMbVariable.GetOwnerAgentId();
-  MailboxVariableMap[pSsvId] = MailboxVariable(pSsvId, LpId(pAgent, GetRankFromAgentId(pAgent)));
+  MailboxVariableMap[pSsvId] = new MailboxVariable(pSsvId, LpId(pAgent, GetRankFromAgentId(pAgent)));
 #ifdef SSV_LOCALISATION
   ACCalculator->InitialiseCounters(pSsvId);
 
@@ -107,21 +106,21 @@ MailboxVariable MbSharedState::GetCopy(const SsvId &) {
 SerialisableList<MbMail> MbSharedState::Read(const unsigned long pOwnerId, unsigned long pTime) {
   // unsigned long agentId = pAgent.GetId();
   SsvId fSsvId = MailboxAgentMap.find(pOwnerId)->second;
-  return MailboxVariableMap.find(fSsvId)->second.ReadMb(pOwnerId, pTime);
+  return MailboxVariableMap.find(fSsvId)->second->ReadMb(pOwnerId, pTime);
 }
 
 void MbSharedState::RollbackRead(const unsigned long pOwnerId, unsigned long pTime) {
   // rollbacks reads that shouldnt happen
   SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
-  MailboxVariable mbv = MailboxVariableMap.find(mbvId)->second;
-  mbv.PeformReadRB(pOwnerId, pTime);
+  MailboxVariable *mbv = MailboxVariableMap.find(mbvId)->second;
+  mbv->PeformReadRB(pOwnerId, pTime);
 }
 
 
 void MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime,
                                   RollbackList pRollbackList) {
   SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
-  MailboxVariable mbv = MailboxVariableMap[mbvId];
+  MailboxVariable *mbv = MailboxVariableMap[mbvId];
   //unsigned long readUntil = MailboxVariableMap.find(mbvId)->second.GetReadUntil();
 
   // two situations here
@@ -131,7 +130,7 @@ void MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSen
   // then delete it from statebase
   // and roll back the owner (add it into the rollbacklist)
 
-  mbv.PerformWriteRB(pSender, pTime, pRollbackList);
+  mbv->PerformWriteRB(pSender, pTime, pRollbackList);
 }
 
 //void MbSharedState::RemoveMessageList(const SsvId &, RollbackList &) {}

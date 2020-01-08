@@ -6,7 +6,7 @@
 MbAgent::MbAgent(const unsigned long startTime, const unsigned long endTime, unsigned long agentId) : Agent(
     startTime, endTime, agentId) {
   freqCounter = 0;
-  frequency = 1000;
+  frequency = 10;
 }
 
 
@@ -42,6 +42,7 @@ void MbAgent::InitSendList(list<unsigned long> agList, unsigned int listLen, uns
 
 
 void MbAgent::Cycle() {
+
   spdlog::warn("Cycle begin, Agent {}, LVT {}", agent_id(), GetLVT());
 
   srand(time(NULL));
@@ -62,6 +63,7 @@ void MbAgent::Cycle() {
       spdlog::debug("Agent{0}, Agent{1}, MsgID{2}, write failed", this->agent_id(), i, msgSerial);
     }
   }
+
   if (freqCounter < frequency) {
     freqCounter++;
   } else {
@@ -69,11 +71,14 @@ void MbAgent::Cycle() {
   }
   // spdlog::debug("Agent{0}, Agent{1}, MsgID{3}, replied", this->agentId, i, msgSerial);
   // read msg from mailbox, and see if received reply msg
+  SendGVTMessage();
+
   if (freqCounter == frequency) {
     //spdlog::debug("Agent{0}, request to read mailbox", this->agent_id());
     SerialisableList<MbMail> newMails = this->RequestNewMails(agent_id(), this->GetLVT() + 1);
     // can modify RequestNewMails() to check type
     spdlog::debug("Agent{0}, read mailbox success, size {1}", this->agent_id(), newMails.size());
+    return;
     auto newMailIterator = newMails.begin();
     while (newMailIterator != newMails.end()) {
       unsigned long sender = newMailIterator->GetSender().GetId();
@@ -107,8 +112,6 @@ void MbAgent::Cycle() {
 //        spdlog::debug("Agent{0}, recv new msg from Agent{1},serial{2}", agent_id(), sender, messageSerial);
       }
     }
-    // TODO update GVT
-    SendGVTMessage();
   }
 }
 

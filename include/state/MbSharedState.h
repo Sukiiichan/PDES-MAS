@@ -15,7 +15,7 @@ using namespace std;
 namespace pdesmas {
     class MbSharedState {
     private:
-        map<SsvId, MailboxVariable> MailboxVariableMap;
+        map<SsvId, MailboxVariable*> MailboxVariableMap;
         map<unsigned long , SsvId> MailboxAgentMap; // map agentid with mailbox variable id
         // map<LpId, vector<tuple<unsigned long,  unsigned long >>> MbWriteMap;
         // map<sender,vector(tuple(time,receiver))>
