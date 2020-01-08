@@ -17,7 +17,7 @@ namespace pdesmas {
     private:
         map<SsvId, MailboxVariable> MailboxVariableMap;
         map<unsigned long , SsvId> MailboxAgentMap; // map agentid with mailbox variable id
-        map<LpId, vector<tuple<unsigned long,  unsigned long >>> MbWriteMap;
+        // map<LpId, vector<tuple<unsigned long,  unsigned long >>> MbWriteMap;
         // map<sender,vector(tuple(time,receiver))>
         RangeRoutingTable *RRTable;
         AccessCostCalculator *ACCalculator;

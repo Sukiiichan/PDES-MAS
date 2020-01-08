@@ -40,23 +40,33 @@ SsvId MbSharedState::GetMbvId(const unsigned long pSenderId) {
 
 bool MbSharedState::WriteMbMsg(const LpId &pSender, const unsigned long pReceiverId, unsigned long pTime,
                                const AbstractValue *pValue) {
+  //spdlog::debug("Total num of mbv: {}",MailboxVariableMap.size());
   SsvId dstId = MailboxAgentMap.find(pReceiverId)->second;
   MailboxVariable dstMbv = MailboxVariableMap.find(dstId)->second;
-  if (dstMbv.AddMbMessage(pValue, pTime, pSender)) {
-
-    auto mbWriteMapIter = MbWriteMap.find(pSender);
-
-    for (auto recordIterator = mbWriteMapIter->second.begin();
-         recordIterator != mbWriteMapIter->second.end(); recordIterator++) {
-      if (get<0>(*recordIterator) > pTime) {
-        mbWriteMapIter->second.insert(recordIterator, make_tuple(pTime, pReceiverId));
-      }
-      // mbWriteMapIter.emplace_back(pTime, pReceiver);
-      // find the nearest log to pTime
-    }
-  }
-  return false;
+  assert(MailboxVariableMap.find(dstId)!=MailboxVariableMap.end());
+  // TODO see the variable in map
+  //spdlog::debug("prepare to add msg to {0}", dstId.id());
+  return dstMbv.AddMbMessage(pValue, pTime, pSender);
 }
+//    auto mbWriteMapIter = MbWriteMap.find(pSender);
+//
+//    if (mbWriteMapIter == MbWriteMap.end()) {
+//      std::ostringstream out;
+//      pValue->Serialise(out);
+//      spdlog::critical("Can't find agent in mbWriteMap: function call was: MbSharedState::WriteMbMsg(({},{}),{},{},{})",
+//                    pSender.GetId(), pSender.GetRank(), pReceiverId, pTime, out.str());
+//      exit(1);
+//    }
+//    for (auto recordIterator = mbWriteMapIter->second.begin();
+//         recordIterator != mbWriteMapIter->second.end(); recordIterator++) {
+//      if (get<0>(*recordIterator) > pTime) {
+//        mbWriteMapIter->second.insert(recordIterator, make_tuple(pTime, pReceiverId));
+//      }
+//      // mbWriteMapIter.emplace_back(pTime, pReceiver);
+//      // find the nearest log to pTime
+//    }
+// }
+
 
 void MbSharedState::Add(const SsvId &pSsvId, const LpId &pAgent) {
   if (ContainsVariable(pSsvId)) {
@@ -69,6 +79,7 @@ void MbSharedState::Add(const SsvId &pSsvId, const LpId &pAgent) {
   MailboxVariableMap[pSsvId] = newMailboxVariable;
   MailboxAgentMap[pAgent.GetId()] = pSsvId;
 #ifdef SSV_LOCALISATION
+  spdlog::debug("MbSharedState::Add({},({},{}))", pSsvId.id(), pAgent.GetId(), pAgent.GetRank());
   ACCalculator->InitialiseCounters(pSsvId);
 
 #endif
@@ -81,12 +92,17 @@ void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariab
   }
   const unsigned long pAgent = pMbVariable.GetOwnerAgentId();
   MailboxVariableMap[pSsvId] = MailboxVariable(pSsvId, LpId(pAgent, GetRankFromAgentId(pAgent)));
+#ifdef SSV_LOCALISATION
+  ACCalculator->InitialiseCounters(pSsvId);
+
+#endif
 }
 
 void MbSharedState::Delete(const SsvId &) {}
 
 
-MailboxVariable MbSharedState::GetCopy(const SsvId &) {}
+MailboxVariable MbSharedState::GetCopy(const SsvId &) {
+}
 
 SerialisableList<MbMail> MbSharedState::Read(const unsigned long pOwnerId, unsigned long pTime) {
   // unsigned long agentId = pAgent.GetId();
@@ -106,7 +122,7 @@ void MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSen
                                   RollbackList pRollbackList) {
   SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
   MailboxVariable mbv = MailboxVariableMap[mbvId];
-  unsigned long readUntil = MailboxVariableMap.find(mbvId)->second.GetReadUntil();
+  //unsigned long readUntil = MailboxVariableMap.find(mbvId)->second.GetReadUntil();
 
   // two situations here
   // one: the message haven't been read yet

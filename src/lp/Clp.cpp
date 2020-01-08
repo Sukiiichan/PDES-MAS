@@ -586,7 +586,7 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
 
 #ifdef SSV_LOCALISATION
    // Update the access count for state migration
-   fSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(mbOwnerId),
+   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(mbOwnerId),
                                   fRouter->GetDirectionByLpRank(pMailboxWriteMessage->GetOriginalAgent().GetRank()),
                                   pMailboxWriteMessage->GetNumberOfHops());
 #endif
@@ -608,6 +608,7 @@ void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
 }
 
 void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
+  unsigned long mbOwnerId = pMbAntiWriteMsg->GetMbOwnerId();
    if (fGVT > pMbAntiWriteMsg->GetTimestamp()) {
       LOG(logERROR) << "";
       return;
@@ -616,7 +617,12 @@ void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
     fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetOriginalAgent().GetId(), pMbAntiWriteMsg->GetOriginalAgent(),
                                  pMbAntiWriteMsg->GetTimestamp(), rollbackList);
    rollbackList.SendRollbacks(this, pMbAntiWriteMsg->GetRollbackTag());
-
+#ifdef SSV_LOCALISATION
+  // Update the access count for state migration
+  fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(mbOwnerId),
+                                   fRouter->GetDirectionByLpRank(pMbAntiWriteMsg->GetOriginalAgent().GetRank()),
+                                   pMbAntiWriteMsg->GetNumberOfHops());
+#endif
 }
 
 void Clp::ProcessMessage(const SingleReadAntiMessage *pSingleReadAntiMessage) {

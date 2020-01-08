@@ -7,6 +7,8 @@
 #include <types/SerialisableList.h>
 #include <state/MbMail.h>
 #include <vector>
+#include <Log.h>
+#include <spdlog/spdlog.h>
 
 using namespace std;
 namespace pdesmas {

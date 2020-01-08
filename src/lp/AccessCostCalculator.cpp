@@ -16,7 +16,7 @@ AccessCostCalculator::~AccessCostCalculator() {
   fSSVPortHopMap.clear();
 }
 
-void AccessCostCalculator::InitialiseCounters(const SsvId& pSsvId) {
+void AccessCostCalculator::InitialiseCounters(const SsvId &pSsvId) {
   if (!ContainsVariable(pSsvId)) {
     fSSVList.push_back(pSsvId);
     fLPThreshold = (unsigned long) ((fSSVList.size()) * fPortThreshold);
@@ -29,9 +29,11 @@ void AccessCostCalculator::InitialiseCounters(const SsvId& pSsvId) {
   fSSVPortAccessMap[pSsvId] = initialCounterMap;
 }
 
-unsigned long AccessCostCalculator::UpdateAccessCount(Direction pDirection, unsigned long pAccessCount, const SsvId& pSsvId) {
+unsigned long
+AccessCostCalculator::UpdateAccessCount(Direction pDirection, unsigned long pAccessCount, const SsvId &pSsvId) {
   if (!ContainsVariable(pSsvId)) {
-    LOG(logERROR) << "AccessCostCalculator::UpdateAccessCount# Trying to update access count on non-existent variable" << pSsvId;
+    spdlog::error("AccessCostCalculator::UpdateAccessCount# Trying to update access count on non-existent variable {}",
+                  pSsvId.id());
     return 0;
   }
   unsigned long oldAccessCount = 0;
@@ -41,27 +43,30 @@ unsigned long AccessCostCalculator::UpdateAccessCount(Direction pDirection, unsi
     if (counterMapIterator != ssvPortAccessMapIterator->second.end()) {
       oldAccessCount = counterMapIterator->second;
       counterMapIterator->second += pAccessCount;
-    } else ssvPortAccessMapIterator->second.insert( make_pair(pDirection, pAccessCount));
+    } else ssvPortAccessMapIterator->second.insert(make_pair(pDirection, pAccessCount));
   }
   return oldAccessCount;
 }
 
-void AccessCostCalculator::RemoveSsvAccessRecord(const SsvId& pSsvId) {
+void AccessCostCalculator::RemoveSsvAccessRecord(const SsvId &pSsvId) {
   if (!ContainsVariable(pSsvId)) {
-    LOG(logERROR) << "AccessCostCalculator::RemoveSsvAccessRecord# Trying to remove access count on non-existent variable" << pSsvId;
+    LOG(logERROR)
+      << "AccessCostCalculator::RemoveSsvAccessRecord# Trying to remove access count on non-existent variable"
+      << pSsvId;
     return;
   }
   map<SsvId, CounterMap>::iterator ssvPortAccessMapIterator = fSSVPortAccessMap.find(pSsvId);
   fSSVPortAccessMap.erase(ssvPortAccessMapIterator);
 }
 
-unsigned long AccessCostCalculator::UpdateHopCount(Direction pDirection, unsigned long pHopCount, const SsvId& pSsvId) {
+unsigned long AccessCostCalculator::UpdateHopCount(Direction pDirection, unsigned long pHopCount, const SsvId &pSsvId) {
   if (!ContainsVariable(pSsvId)) {
-    LOG(logERROR) << "AccessCostCalculator::UpdateHopCount# Trying to update hop count on non-existent variable" << pSsvId;
+    LOG(logERROR) << "AccessCostCalculator::UpdateHopCount# Trying to update hop count on non-existent variable"
+                  << pSsvId;
     return 0;
   }
   unsigned long oldHops = 0;
-  map<SsvId, CounterMap>::iterator ssvPortHopMapIterator = fSSVPortHopMap.find( pSsvId);
+  map<SsvId, CounterMap>::iterator ssvPortHopMapIterator = fSSVPortHopMap.find(pSsvId);
   if (ssvPortHopMapIterator != fSSVPortHopMap.end()) {
     CounterMap::iterator counterMapIterator = ssvPortHopMapIterator->second.find(pDirection);
     if (counterMapIterator != ssvPortHopMapIterator->second.end()) {
@@ -72,16 +77,17 @@ unsigned long AccessCostCalculator::UpdateHopCount(Direction pDirection, unsigne
   return oldHops;
 }
 
-void AccessCostCalculator::RemoveSsvHopRecord(const SsvId& pSsvId) {
+void AccessCostCalculator::RemoveSsvHopRecord(const SsvId &pSsvId) {
   if (!ContainsVariable(pSsvId)) {
-    LOG(logERROR) << "AccessCostCalculator::RemoveSsvHopRecord# Trying to remove hop count on non-existent variable" << pSsvId;
+    LOG(logERROR) << "AccessCostCalculator::RemoveSsvHopRecord# Trying to remove hop count on non-existent variable"
+                  << pSsvId;
     return;
   }
-  map<SsvId, CounterMap>::iterator ssvPortHopMapIterator = fSSVPortHopMap.find( pSsvId);
+  map<SsvId, CounterMap>::iterator ssvPortHopMapIterator = fSSVPortHopMap.find(pSsvId);
   fSSVPortHopMap.erase(ssvPortHopMapIterator);
 }
 
-void AccessCostCalculator::RemoveSsvFromList(const SsvId& pSsvId) {
+void AccessCostCalculator::RemoveSsvFromList(const SsvId &pSsvId) {
   list<SsvId>::iterator ssvListIterator = fSSVList.begin();
   if (fSSVList.size() > 0) {
     while (ssvListIterator != fSSVList.end()) {
@@ -95,7 +101,8 @@ void AccessCostCalculator::RemoveSsvFromList(const SsvId& pSsvId) {
   fLPThreshold = (unsigned long) ((fSSVList.size()) * fPortThreshold);
 }
 
-void AccessCostCalculator::UpdateLoad(unsigned long pOldHops, unsigned long pOldAccess, unsigned long pNewHops, unsigned long pNewAccess) {
+void AccessCostCalculator::UpdateLoad(unsigned long pOldHops, unsigned long pOldAccess, unsigned long pNewHops,
+                                      unsigned long pNewAccess) {
   fCLPLoad += ((pNewHops - pOldHops) * (pNewAccess - pOldAccess));
 }
 
@@ -118,12 +125,14 @@ map<Direction, list<SsvId> > AccessCostCalculator::GetMigrationMap() {
     for (int direction = 1; direction < DIRECTION_SIZE; ++direction) {
       ssvHopCost = ssvHopCost + GetHopCount((Direction) direction, *ssvListIterator);
       ssvAccessCost = ssvAccessCost + GetAccessCount((Direction) direction, *ssvListIterator);
-      ssvPortAccessCost = ssvPortAccessCost + (GetAccessCount( (Direction) direction, *ssvListIterator) * GetHopCount( (Direction) direction, *ssvListIterator));
+      ssvPortAccessCost = ssvPortAccessCost + (GetAccessCount((Direction) direction, *ssvListIterator) *
+                                               GetHopCount((Direction) direction, *ssvListIterator));
     }
 
     if (ssvPortAccessCost > fPortThreshold) {
       for (int direction = 1; direction < DIRECTION_SIZE; ++direction) {
-        if (GetAccessCount((Direction) direction, *ssvListIterator) > (2 * (ssvAccessCost - GetAccessCount((Direction) direction, *ssvListIterator)))) {
+        if (GetAccessCount((Direction) direction, *ssvListIterator) >
+            (2 * (ssvAccessCost - GetAccessCount((Direction) direction, *ssvListIterator)))) {
           if (!fIsParentCLP || (Direction) direction == UP) {
             map<Direction, list<SsvId> >::iterator migrateSSVMapIterator = MigrateSSVMap.find((Direction) direction);
             if (migrateSSVMapIterator != MigrateSSVMap.end()) {
@@ -143,7 +152,7 @@ map<Direction, list<SsvId> > AccessCostCalculator::GetMigrationMap() {
   return MigrateSSVMap;
 }
 
-bool AccessCostCalculator::ContainsVariable(const SsvId& pSsvId) const {
+bool AccessCostCalculator::ContainsVariable(const SsvId &pSsvId) const {
   list<SsvId>::const_iterator SsvListIterator = fSSVList.begin();
   if (fSSVList.size() > 0) {
     while (SsvListIterator != fSSVList.end()) {
@@ -151,11 +160,12 @@ bool AccessCostCalculator::ContainsVariable(const SsvId& pSsvId) const {
       ++SsvListIterator;
     }
   }
+  spdlog::debug("SSV {} not found, size of SSVList: {}", pSsvId.id(), fSSVList.size());
   return false;
 }
 
 unsigned long AccessCostCalculator::GetAccessCount(Direction pDirection,
-    const SsvId& pSsvId) const {
+                                                   const SsvId &pSsvId) const {
   map<SsvId, CounterMap>::const_iterator SsvPortAccessMapIterator = fSSVPortAccessMap.find(pSsvId);
   if (SsvPortAccessMapIterator == fSSVPortAccessMap.end()) return 0;
   CounterMap::const_iterator CounterMapIterator = SsvPortAccessMapIterator->second.find(pDirection);
@@ -164,10 +174,10 @@ unsigned long AccessCostCalculator::GetAccessCount(Direction pDirection,
 }
 
 unsigned long AccessCostCalculator::GetHopCount(Direction pDirection,
-    const SsvId& pSsvId) const {
+                                                const SsvId &pSsvId) const {
   map<SsvId, CounterMap>::const_iterator SsvPortHopMapIterator = fSSVPortHopMap.find(pSsvId);
   if (SsvPortHopMapIterator == fSSVPortHopMap.end()) return 0;
-  CounterMap::const_iterator CounterMapIterator = SsvPortHopMapIterator->second.find( pDirection);
+  CounterMap::const_iterator CounterMapIterator = SsvPortHopMapIterator->second.find(pDirection);
   if (CounterMapIterator != SsvPortHopMapIterator->second.end()) return CounterMapIterator->second;
   return 0;
 }

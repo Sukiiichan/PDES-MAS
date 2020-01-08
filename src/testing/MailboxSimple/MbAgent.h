@@ -21,7 +21,7 @@ public:
 
     // void SetFrequency(unsigned int);
 
-    void InitSendList(unsigned int totalNum, unsigned int listLen,unsigned int seed);
+    void InitSendList(list<unsigned long> agList, unsigned int listLen,unsigned int seed);
 
 
 private:
