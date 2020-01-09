@@ -37,15 +37,15 @@ namespace pdesmas {
 
         const SerialisableList<MbMail> &GetMessageList() const;
 
-        bool AddMbMessage(const AbstractValue *, unsigned long, const LpId &);
+        bool AddMbMessage(const AbstractValue *, unsigned long pTime, const LpId &pSender);
 
         bool RemoveMbMessage(const LpId&, unsigned long);
 
         void RemoveOldMessage(unsigned long);
 
-        void PeformReadRB(const unsigned long pOwnerId, unsigned long pTime);
+        void PeformReadAnti(const unsigned long pOwnerId, unsigned long pTime);
 
-        void PerformWriteRB(const LpId &pSender, unsigned long pTime, RollbackList pRollbackList);
+        void PerformWriteAnti(const LpId &pSender, unsigned long pTime, RollbackList pRollbackList);
 
         vector<pair<LpId, unsigned long>> GetRbList(unsigned long);
 

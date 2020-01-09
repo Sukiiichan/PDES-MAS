@@ -28,6 +28,7 @@ namespace pdesmas {
 #define ROLLBACK_BY_WRITE 1
 #define ROLLBACK_BY_RU 2
 #define ROLLBACK_BY_SM 3
+#define ROLLBACK_BY_MBWRITE 4
 
    class Clp: public Lp {
    private:

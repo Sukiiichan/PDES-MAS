@@ -55,7 +55,7 @@ void MbAgent::Cycle() {
     // i is receiver id, 0 means direction
     bool tie = this->WriteMbString(i, msgContent, this->GetLVT() + 1);
     // call ALP to send msg
-    spdlog::debug("Agent{0}, Agent{1}, MsgID{2}, at ts = {3}, sent", this->agent_id(), i, msgSerial,this->GetLVT());
+    spdlog::debug("Agent{0}, Agent{1}, MsgID{2}, at ts = {3}, sent", this->agent_id(), i, msgSerial, this->GetLVT());
     if (tie) {
       // received response msg
       spdlog::debug("Agent{0}, Agent{1}, MsgID{2}, write success", this->agent_id(), i, msgSerial);
@@ -78,7 +78,6 @@ void MbAgent::Cycle() {
     SerialisableList<MbMail> newMails = this->RequestNewMails(agent_id(), this->GetLVT() + 1);
     // can modify RequestNewMails() to check type
     spdlog::debug("Agent{0}, read mailbox success, size {1}", this->agent_id(), newMails.size());
-    return;
     auto newMailIterator = newMails.begin();
     while (newMailIterator != newMails.end()) {
       unsigned long sender = newMailIterator->GetSender().GetId();
@@ -94,7 +93,6 @@ void MbAgent::Cycle() {
       string reply_tie = msgContent.substr(0, msgContent.find(delimiter));
 
       unsigned int messageSerial = stoi(msgContent.erase(0, msgContent.find(delimiter) + delimiter.length()));
-
       if (reply_tie == "0") {
 //        spdlog::debug("Agent{0}, recv reply from Agent{1},serial{2}", agent_id(), sender, messageSerial);
         // generate reply

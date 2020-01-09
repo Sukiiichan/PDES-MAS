@@ -46,7 +46,9 @@ bool MbSharedState::WriteMbMsg(const LpId &pSender, const unsigned long pReceive
   assert(MailboxVariableMap.find(dstId)!=MailboxVariableMap.end());
   // TODO see the variable in map
   //spdlog::debug("prepare to add msg to {0}", dstId.id());
+  // bool rollback_flag = dstMbv->AddMbMessage(pValue, pTime, pSender);
   return dstMbv->AddMbMessage(pValue, pTime, pSender);
+
 }
 //    auto mbWriteMapIter = MbWriteMap.find(pSender);
 //
@@ -113,7 +115,7 @@ void MbSharedState::RollbackRead(const unsigned long pOwnerId, unsigned long pTi
   // rollbacks reads that shouldnt happen
   SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
   MailboxVariable *mbv = MailboxVariableMap.find(mbvId)->second;
-  mbv->PeformReadRB(pOwnerId, pTime);
+  mbv->PeformReadAnti(pOwnerId, pTime);
 }
 
 
@@ -130,7 +132,7 @@ void MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSen
   // then delete it from statebase
   // and roll back the owner (add it into the rollbacklist)
 
-  mbv->PerformWriteRB(pSender, pTime, pRollbackList);
+  mbv->PerformWriteAnti(pSender, pTime, pRollbackList);
 }
 
 //void MbSharedState::RemoveMessageList(const SsvId &, RollbackList &) {}

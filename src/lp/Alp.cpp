@@ -442,6 +442,8 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
     */
    list<SharedStateMessage *> rollbackMessagesInSendList = RollbackSendList(pRollbackMessage->GetTimestamp(),
                                                                             pRollbackMessage->GetOriginalAgent());
+
+   // TODO get send list for MB write RB from map
    for (list<SharedStateMessage *>::iterator iter = rollbackMessagesInSendList.begin();
         iter != rollbackMessagesInSendList.end();) {
       if (fGVT > (*iter)->GetTimestamp()) {

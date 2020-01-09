@@ -40,12 +40,12 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
 #ifdef SSV_LOCALISATION
   fAccessCostCalculator
       = new AccessCostCalculator(GetRank(), GetNumberOfClps());
-  fMbAccessCostCalculator=new AccessCostCalculator(GetRank(), GetNumberOfClps());
+  fMbAccessCostCalculator = new AccessCostCalculator(GetRank(), GetNumberOfClps());
   fSharedState.SetAccessCostCalculator(fAccessCostCalculator);
   fMbSharedState.SetAccessCostCalculator(fMbAccessCostCalculator);
   fStopLoadBalanceProcessing = false;
 #endif
-   // TODO add preload mbv
+  // TODO add preload mbv
   auto ssv_id_value_map = initialisor->GetClpSsvIdValueMap(); // insert initial values
   auto clp_id_ssv_id_map = initialisor->GetClpToSsvMap();
   auto ssv_it = clp_id_ssv_id_map.find(this->GetRank());
@@ -58,9 +58,9 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
 
   auto clp_id_agentmb_id_map = initialisor->GetClpToMbMap();
   auto mb_iter = clp_id_agentmb_id_map.find(this->GetRank());
-  if(mb_iter != clp_id_agentmb_id_map.end()){
+  if (mb_iter != clp_id_agentmb_id_map.end()) {
     auto mbv_list = mb_iter->second;
-    for(auto &iter : mbv_list){
+    for (auto &iter : mbv_list) {
       this->AddMailbox(iter);
     }
   }
@@ -104,7 +104,7 @@ void Clp::AddSSV(const SsvId &pSSVID, const AbstractValue *pValue) {
 void Clp::AddMailbox(unsigned long MbvId) {
   auto mbvId = SsvId(MbvId);
   // mbvId equals agentId
-  fMbSharedState.Add(mbvId,LpId(MbvId,0));
+  fMbSharedState.Add(mbvId, LpId(MbvId, 0));
 }
 
 
@@ -151,76 +151,76 @@ void Clp::Send() {
   }
   if (NULL == sendMessage) return;
 
-   switch (sendMessage->GetType()) {
-      case SINGLEREADMESSAGE :
-         PreProcessSendMessage(static_cast<SingleReadMessage *> (sendMessage));
-         break;
-      case SINGLEREADRESPONSEMESSAGE : {
-         SingleReadResponseMessage *singleReadResponseMessage = static_cast<SingleReadResponseMessage *>(sendMessage);
-         // TODO: Check if reroute is necessary
-         fRouter->Route(singleReadResponseMessage);
-         PreProcessSendMessage(singleReadResponseMessage);
-      }
-         break;
-      case SINGLEREADANTIMESSAGE :
-         PreProcessSendMessage(static_cast<SingleReadAntiMessage *> (sendMessage));
-         break;
-      case WRITEMESSAGE :
-         PreProcessSendMessage(static_cast<WriteMessage *> (sendMessage));
-         break;
-      case WRITERESPONSEMESSAGE : {
-         WriteResponseMessage *writeResponseMessage = static_cast<WriteResponseMessage *>(sendMessage);
-         // TODO: Check if reroute is necessary
-         fRouter->Route(writeResponseMessage);
-         PreProcessSendMessage(writeResponseMessage);
-      }
-         break;
-      case WRITEANTIMESSAGE :
-         PreProcessSendMessage(static_cast<WriteAntiMessage *> (sendMessage));
-         break;
-      case MAILBOXREADMESSAGE:
-         PreProcessSendMessage(static_cast<MailboxReadMessage *>(sendMessage));
-         break;
-      case MBREADRESPONSEMSG: {
-         MbReadResponseMsg *mbReadResponseMsg = static_cast<MbReadResponseMsg *>(sendMessage);
-         fRouter->Route(mbReadResponseMsg);
-         PreProcessSendMessage(mbReadResponseMsg);
-      }
-         break;
-      case MBREADANTIMSG:
-         PreProcessSendMessage(static_cast<MbReadAntiMsg *>(sendMessage));
-         break;
-      case MAILBOXWRITEMESSAGE:
-         PreProcessSendMessage(static_cast<MailboxWriteMessage *>(sendMessage));
-         break;
-      case MBWRITERESPONSEMSG: {
-         MbWriteResponseMsg *mbWriteResponseMsg = static_cast<MbWriteResponseMsg *>(sendMessage);
-         fRouter->Route(mbWriteResponseMsg);
-         PreProcessSendMessage(mbWriteResponseMsg);
-      }
-         break;
-      case MBWRITEANTIMSG:
-         PreProcessSendMessage(static_cast<MbWriteAntiMsg *>(sendMessage));
-         break;
-      case RANGEQUERYMESSAGE :
-         PreProcessSendMessage(static_cast<RangeQueryMessage *> (sendMessage));
-         break;
-      case ROLLBACKMESSAGE : {
-         RollbackMessage *rollbackMessage = static_cast<RollbackMessage *>(sendMessage);
-         // TODO: Check if reroute is necessary
-         fRouter->Route(rollbackMessage);
-         PreProcessSendMessage(rollbackMessage);
-      }
-         break;
-      case STATEMIGRATIONMESSAGE :
-         // TODO: Check if reroute is necessary
-         fRouter->Route(static_cast<StateMigrationMessage *>(sendMessage));
-         break;
-      default :
-         // Skip
-         break;
-   }
-   fMPIInterface->Send(sendMessage);
+  switch (sendMessage->GetType()) {
+    case SINGLEREADMESSAGE :
+      PreProcessSendMessage(static_cast<SingleReadMessage *> (sendMessage));
+      break;
+    case SINGLEREADRESPONSEMESSAGE : {
+      SingleReadResponseMessage *singleReadResponseMessage = static_cast<SingleReadResponseMessage *>(sendMessage);
+      // TODO: Check if reroute is necessary
+      fRouter->Route(singleReadResponseMessage);
+      PreProcessSendMessage(singleReadResponseMessage);
+    }
+      break;
+    case SINGLEREADANTIMESSAGE :
+      PreProcessSendMessage(static_cast<SingleReadAntiMessage *> (sendMessage));
+      break;
+    case WRITEMESSAGE :
+      PreProcessSendMessage(static_cast<WriteMessage *> (sendMessage));
+      break;
+    case WRITERESPONSEMESSAGE : {
+      WriteResponseMessage *writeResponseMessage = static_cast<WriteResponseMessage *>(sendMessage);
+      // TODO: Check if reroute is necessary
+      fRouter->Route(writeResponseMessage);
+      PreProcessSendMessage(writeResponseMessage);
+    }
+      break;
+    case WRITEANTIMESSAGE :
+      PreProcessSendMessage(static_cast<WriteAntiMessage *> (sendMessage));
+      break;
+    case MAILBOXREADMESSAGE:
+      PreProcessSendMessage(static_cast<MailboxReadMessage *>(sendMessage));
+      break;
+    case MBREADRESPONSEMSG: {
+      MbReadResponseMsg *mbReadResponseMsg = static_cast<MbReadResponseMsg *>(sendMessage);
+      fRouter->Route(mbReadResponseMsg);
+      PreProcessSendMessage(mbReadResponseMsg);
+    }
+      break;
+    case MBREADANTIMSG:
+      PreProcessSendMessage(static_cast<MbReadAntiMsg *>(sendMessage));
+      break;
+    case MAILBOXWRITEMESSAGE:
+      PreProcessSendMessage(static_cast<MailboxWriteMessage *>(sendMessage));
+      break;
+    case MBWRITERESPONSEMSG: {
+      MbWriteResponseMsg *mbWriteResponseMsg = static_cast<MbWriteResponseMsg *>(sendMessage);
+      fRouter->Route(mbWriteResponseMsg);
+      PreProcessSendMessage(mbWriteResponseMsg);
+    }
+      break;
+    case MBWRITEANTIMSG:
+      PreProcessSendMessage(static_cast<MbWriteAntiMsg *>(sendMessage));
+      break;
+    case RANGEQUERYMESSAGE :
+      PreProcessSendMessage(static_cast<RangeQueryMessage *> (sendMessage));
+      break;
+    case ROLLBACKMESSAGE : {
+      RollbackMessage *rollbackMessage = static_cast<RollbackMessage *>(sendMessage);
+      // TODO: Check if reroute is necessary
+      fRouter->Route(rollbackMessage);
+      PreProcessSendMessage(rollbackMessage);
+    }
+      break;
+    case STATEMIGRATIONMESSAGE :
+      // TODO: Check if reroute is necessary
+      fRouter->Route(static_cast<StateMigrationMessage *>(sendMessage));
+      break;
+    default :
+      // Skip
+      break;
+  }
+  fMPIInterface->Send(sendMessage);
 }
 
 void Clp::Receive() {
@@ -311,82 +311,82 @@ void Clp::Receive() {
     }
       break;
 
-      case MAILBOXREADMESSAGE: {
-         MailboxReadMessage *mailboxReadMessage = static_cast<MailboxReadMessage *>(receivedMessage);
-         mailboxReadMessage->IncrementNumberOfHops();
-         PreProcessReceiveMessage(mailboxReadMessage);
-         if (fRouter->Route(mailboxReadMessage)) {
-            ProcessMessage(mailboxReadMessage);
-            PostProcessMessage();
-            delete mailboxReadMessage;
-         } else {
-            mailboxReadMessage->SendToLp(this);
-         }
+    case MAILBOXREADMESSAGE: {
+      MailboxReadMessage *mailboxReadMessage = static_cast<MailboxReadMessage *>(receivedMessage);
+      mailboxReadMessage->IncrementNumberOfHops();
+      PreProcessReceiveMessage(mailboxReadMessage);
+      if (fRouter->Route(mailboxReadMessage)) {
+        ProcessMessage(mailboxReadMessage);
+        PostProcessMessage();
+        delete mailboxReadMessage;
+      } else {
+        mailboxReadMessage->SendToLp(this);
       }
-         break;
-      case MAILBOXWRITEMESSAGE: {
-         MailboxWriteMessage *mailboxWriteMessage = static_cast<MailboxWriteMessage *>(receivedMessage);
-         mailboxWriteMessage->IncrementNumberOfHops();
-         PreProcessReceiveMessage(mailboxWriteMessage);
-         if (fRouter->Route(mailboxWriteMessage)) {
-            ProcessMessage(mailboxWriteMessage);
-            PostProcessMessage();
-            mailboxWriteMessage->ClearValue();
-            delete mailboxWriteMessage;
-         } else {
-            mailboxWriteMessage->SendToLp(this);
-         }
+    }
+      break;
+    case MAILBOXWRITEMESSAGE: {
+      MailboxWriteMessage *mailboxWriteMessage = static_cast<MailboxWriteMessage *>(receivedMessage);
+      mailboxWriteMessage->IncrementNumberOfHops();
+      PreProcessReceiveMessage(mailboxWriteMessage);
+      if (fRouter->Route(mailboxWriteMessage)) {
+        ProcessMessage(mailboxWriteMessage);
+        PostProcessMessage();
+        mailboxWriteMessage->ClearValue();
+        delete mailboxWriteMessage;
+      } else {
+        mailboxWriteMessage->SendToLp(this);
       }
-         break;
-      case MBREADANTIMSG: {
-         MbReadAntiMsg *mbAntiReadMsg = static_cast<MbReadAntiMsg *>(receivedMessage);
-         mbAntiReadMsg->IncrementNumberOfHops();
-         PreProcessReceiveMessage(mbAntiReadMsg);
-         if (fRouter->Route(mbAntiReadMsg)) {
-            ProcessMessage(mbAntiReadMsg);
-            PostProcessMessage();
-            delete mbAntiReadMsg;
-         } else {
-            mbAntiReadMsg->SendToLp(this);
-         }
+    }
+      break;
+    case MBREADANTIMSG: {
+      MbReadAntiMsg *mbAntiReadMsg = static_cast<MbReadAntiMsg *>(receivedMessage);
+      mbAntiReadMsg->IncrementNumberOfHops();
+      PreProcessReceiveMessage(mbAntiReadMsg);
+      if (fRouter->Route(mbAntiReadMsg)) {
+        ProcessMessage(mbAntiReadMsg);
+        PostProcessMessage();
+        delete mbAntiReadMsg;
+      } else {
+        mbAntiReadMsg->SendToLp(this);
       }
-         break;
-      case MBWRITEANTIMSG: {
-         MbWriteAntiMsg *mbAntiWriteMsg =
-               static_cast<MbWriteAntiMsg *> (receivedMessage);
-         mbAntiWriteMsg->IncrementNumberOfHops();
-         PreProcessReceiveMessage(mbAntiWriteMsg);
-         if (fRouter->Route(mbAntiWriteMsg)) {
-            ProcessMessage(mbAntiWriteMsg);
-            PostProcessMessage();
-            delete mbAntiWriteMsg;
-         } else mbAntiWriteMsg->SendToLp(this);
-      }
-         break;
-      case MBREADRESPONSEMSG: {
-         MbReadResponseMsg *mbReadResponseMsg =
-               static_cast<MbReadResponseMsg *> (receivedMessage);
-         PreProcessReceiveMessage(mbReadResponseMsg);
-         if (fRouter->Route(mbReadResponseMsg)) {
-            LOG(logERROR)
-               << "Clp::Receive(" << GetRank()
-               << ")# MbReadResponseMsg received for this CLP while CLPs don't handle response messages! "
-               << *receivedMessage;
-         } else mbReadResponseMsg->SendToLp(this);
-      }
-         break;
-      case MBWRITERESPONSEMSG: {
-         MbWriteResponseMsg *mbWriteResponseMsg =
-               static_cast<MbWriteResponseMsg *> (receivedMessage);
-         PreProcessReceiveMessage(mbWriteResponseMsg);
-         if (fRouter->Route(mbWriteResponseMsg)) {
-            LOG(logERROR)
-               << "Clp::Receive(" << GetRank()
-               << ")# MbWriteResponseMsg received for this CLP while CLPs don't handle response messages! "
-               << *receivedMessage;
-         } else mbWriteResponseMsg->SendToLp(this);
-      }
-         break;
+    }
+      break;
+    case MBWRITEANTIMSG: {
+      MbWriteAntiMsg *mbAntiWriteMsg =
+          static_cast<MbWriteAntiMsg *> (receivedMessage);
+      mbAntiWriteMsg->IncrementNumberOfHops();
+      PreProcessReceiveMessage(mbAntiWriteMsg);
+      if (fRouter->Route(mbAntiWriteMsg)) {
+        ProcessMessage(mbAntiWriteMsg);
+        PostProcessMessage();
+        delete mbAntiWriteMsg;
+      } else mbAntiWriteMsg->SendToLp(this);
+    }
+      break;
+    case MBREADRESPONSEMSG: {
+      MbReadResponseMsg *mbReadResponseMsg =
+          static_cast<MbReadResponseMsg *> (receivedMessage);
+      PreProcessReceiveMessage(mbReadResponseMsg);
+      if (fRouter->Route(mbReadResponseMsg)) {
+        LOG(logERROR)
+          << "Clp::Receive(" << GetRank()
+          << ")# MbReadResponseMsg received for this CLP while CLPs don't handle response messages! "
+          << *receivedMessage;
+      } else mbReadResponseMsg->SendToLp(this);
+    }
+      break;
+    case MBWRITERESPONSEMSG: {
+      MbWriteResponseMsg *mbWriteResponseMsg =
+          static_cast<MbWriteResponseMsg *> (receivedMessage);
+      PreProcessReceiveMessage(mbWriteResponseMsg);
+      if (fRouter->Route(mbWriteResponseMsg)) {
+        LOG(logERROR)
+          << "Clp::Receive(" << GetRank()
+          << ")# MbWriteResponseMsg received for this CLP while CLPs don't handle response messages! "
+          << *receivedMessage;
+      } else mbWriteResponseMsg->SendToLp(this);
+    }
+      break;
 #ifdef RANGE_QUERIES
     case RANGEQUERYMESSAGE: {
       RangeQueryMessage *rangeQueryMessage =
@@ -512,111 +512,112 @@ void Clp::ProcessMessage(const SingleReadMessage *pSingleReadMessage) {
 }
 
 void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
-   LOG(logFINEST) << "Clp::ProcessMessage(MailboxReadMessage)(" << GetRank() << ")# Read mailbox from message:"
-                  << *pMailboxReadMessage;
+  LOG(logFINEST) << "Clp::ProcessMessage(MailboxReadMessage)(" << GetRank() << ")# Read mailbox from message:"
+                 << *pMailboxReadMessage;
 
-   LpId sender = pMailboxReadMessage->GetOriginalAgent();
-   if (!fMbSharedState.MbValid(sender.GetId())) {
-      LOG(logERROR) << "no mailbox record";
-      exit(0);
-   }
+  LpId sender = pMailboxReadMessage->GetOriginalAgent();
+  if (!fMbSharedState.MbValid(sender.GetId())) {
+    LOG(logERROR) << "no mailbox record";
+    exit(0);
+  }
 
-   unsigned long senderId = pMailboxReadMessage->GetIdentifier(); //sender agent id (unsigned long)
-   unsigned int dstClp = pMailboxReadMessage->GetDestination();
-   unsigned long reqTime = pMailboxReadMessage->GetTimestamp();
+  unsigned long senderId = pMailboxReadMessage->GetIdentifier(); //sender agent id (unsigned long)
+  unsigned int dstClp = pMailboxReadMessage->GetDestination();
+  unsigned long reqTime = pMailboxReadMessage->GetTimestamp();
 
-   SerialisableList<MbMail> mailList = fMbSharedState.Read(sender.GetId(), reqTime);
+  SerialisableList<MbMail> mailList = fMbSharedState.Read(sender.GetId(), reqTime);
 
-   MbReadResponseMsg *mbReadResponseMsg = new MbReadResponseMsg();
-   mbReadResponseMsg->SetOrigin(GetRank());
-   mbReadResponseMsg->SetDestination(pMailboxReadMessage->GetOriginalAgent().GetRank());
-   mbReadResponseMsg->SetTimestamp(pMailboxReadMessage->GetTimestamp());
-   mbReadResponseMsg->SetIdentifier(pMailboxReadMessage->GetIdentifier());
-   mbReadResponseMsg->SetOriginalAgent(pMailboxReadMessage->GetOriginalAgent());
-   mbReadResponseMsg->SetMailList(mailList);
-   mbReadResponseMsg->SendToLp(this);
+  MbReadResponseMsg *mbReadResponseMsg = new MbReadResponseMsg();
+  mbReadResponseMsg->SetOrigin(GetRank());
+  mbReadResponseMsg->SetDestination(pMailboxReadMessage->GetOriginalAgent().GetRank());
+  mbReadResponseMsg->SetTimestamp(pMailboxReadMessage->GetTimestamp());
+  mbReadResponseMsg->SetIdentifier(pMailboxReadMessage->GetIdentifier());
+  mbReadResponseMsg->SetOriginalAgent(pMailboxReadMessage->GetOriginalAgent());
+  mbReadResponseMsg->SetMailList(mailList);
+  mbReadResponseMsg->SendToLp(this);
 
 #ifdef SSV_LOCALISATION
-   // Update access count for state migration
-   fMbSharedState.UpdateAccessCount(
-         fMbSharedState.GetMbvId(sender.GetId()),
-         fRouter->GetDirectionByLpRank(
-               pMailboxReadMessage->GetOriginalAgent().GetRank()),
-         pMailboxReadMessage->GetNumberOfHops());
+  // Update access count for state migration
+  fMbSharedState.UpdateAccessCount(
+      fMbSharedState.GetMbvId(sender.GetId()),
+      fRouter->GetDirectionByLpRank(
+          pMailboxReadMessage->GetOriginalAgent().GetRank()),
+      pMailboxReadMessage->GetNumberOfHops());
 #endif
 }
 
 void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
-   const AbstractValue *value = pMailboxWriteMessage->GetValue();
-   unsigned long time = pMailboxWriteMessage->GetTimestamp();
-   const LpId &sender = pMailboxWriteMessage->GetOriginalAgent();
-   const unsigned long mbOwnerId = pMailboxWriteMessage->GetMbOwnerId();
-   WriteStatus writeStatus;
-   bool success = fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAgent(),
-                                            pMailboxWriteMessage->GetMbOwnerId(), time, value);
-   //RollbackList rollbackList = fMbSharedState.GetRollbacklist(receiver, time);
+  const AbstractValue *value = pMailboxWriteMessage->GetValue();
+  unsigned long time = pMailboxWriteMessage->GetTimestamp();
+  // const LpId &sender = pMailboxWriteMessage->GetOriginalAgent();
+  const unsigned long mbOwnerId = pMailboxWriteMessage->GetMbOwnerId();
+  WriteStatus writeStatus;
+  bool write_success = fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAgent(),
+                                                 pMailboxWriteMessage->GetMbOwnerId(), time, value);
+  //RollbackList rollbackList = fMbSharedState.GetRollbacklist(receiver, time);
 
-   if (success) {
-      writeStatus = writeSUCCESS;
-   } else  {
-       // the receiver is rolled back
-      // see len(rblist) else RB
-      // Receiver Agent RB to ptime, send Anti-Read msg
-       RollbackMessage* rollbackMessage = new RollbackMessage();
-       rollbackMessage->SetOrigin(this->GetRank());
-       rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
-       // Rollback message timestamp is the time of the read to be rolled back
-       rollbackMessage->SetTimestamp(time);
-       // Mattern colour set by GVT Calculator
-       RollbackTag rollbackTag(fMbSharedState.GetMbvId(mbOwnerId), time, ROLLBACK_BY_WRITE);
-       rollbackMessage->SetRollbackTag(rollbackTag);
-       rollbackMessage->SetOriginalAgent(LpId(mbOwnerId,fMbSharedState.GetRankFromAgentId(mbOwnerId)));
-       rollbackMessage->SendToLp(this);
-      // TODO generate rbwritemsg to sender & generate rbreadmsg to owner in ALP
-   }
-   auto *mbWriteResponseMsg = new MbWriteResponseMsg();
-   mbWriteResponseMsg->SetOrigin(GetRank());
-   mbWriteResponseMsg->SetDestination(pMailboxWriteMessage->GetOriginalAgent().GetRank());
-   mbWriteResponseMsg->SetTimestamp(pMailboxWriteMessage->GetTimestamp());
+  if (write_success) {
+    writeStatus = writeSUCCESS;
+  } else {
+    // the receiver is rolled back
+    // see len(rblist) else RB
+    // Receiver Agent RB to ptime, send Anti-Read msg
+    // TODO call sys to RB receiver, add sending of antimsgs to RB handling
+    RollbackMessage *rollbackMessage = new RollbackMessage();
+    rollbackMessage->SetOrigin(this->GetRank());
+    // rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
+    rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
+    // Rollback message timestamp is the time of the read to be rolled back
+    rollbackMessage->SetTimestamp(time);
+    // Mattern colour set by GVT Calculator
+    RollbackTag rollbackTag(fMbSharedState.GetMbvId(mbOwnerId), time, ROLLBACK_BY_MBWRITE);
+    rollbackMessage->SetRollbackTag(rollbackTag);
+    rollbackMessage->SetOriginalAgent(LpId(mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId)));
+    rollbackMessage->SendToLp(this);
+  }
+  auto *mbWriteResponseMsg = new MbWriteResponseMsg();
+  mbWriteResponseMsg->SetOrigin(GetRank());
+  mbWriteResponseMsg->SetDestination(pMailboxWriteMessage->GetOriginalAgent().GetRank());
+  mbWriteResponseMsg->SetTimestamp(pMailboxWriteMessage->GetTimestamp());
 
-   mbWriteResponseMsg->SetIdentifier(pMailboxWriteMessage->GetIdentifier());
-   mbWriteResponseMsg->SetOriginalAgent(pMailboxWriteMessage->GetOriginalAgent());
-   mbWriteResponseMsg->SetWriteStatus(writeStatus);
-   mbWriteResponseMsg->SendToLp(this);
+  mbWriteResponseMsg->SetIdentifier(pMailboxWriteMessage->GetIdentifier());
+  mbWriteResponseMsg->SetOriginalAgent(pMailboxWriteMessage->GetOriginalAgent());
+  mbWriteResponseMsg->SetWriteStatus(writeStatus);
+  mbWriteResponseMsg->SendToLp(this);
 
 #ifdef SSV_LOCALISATION
-   // Update the access count for state migration
-   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(mbOwnerId),
-                                  fRouter->GetDirectionByLpRank(pMailboxWriteMessage->GetOriginalAgent().GetRank()),
-                                  pMailboxWriteMessage->GetNumberOfHops());
+  // Update the access count for state migration
+  fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(mbOwnerId),
+                                   fRouter->GetDirectionByLpRank(pMailboxWriteMessage->GetOriginalAgent().GetRank()),
+                                   pMailboxWriteMessage->GetNumberOfHops());
 #endif
 }
 
 void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
-   if (fGVT > pMbAntiReadMsg->GetTimestamp()) {
-      LOG(logERROR) << "";
-      return;
-   }
-   // RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAgent(),pMbAntiReadMsg->GetTimestamp());
-   fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp());
-   // rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
-   // TODO modify this
+  if (fGVT > pMbAntiReadMsg->GetTimestamp()) {
+    LOG(logERROR) << "";
+    return;
+  }
+  // RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAgent(),pMbAntiReadMsg->GetTimestamp());
+  fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp());
+  // rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
+  // TODO modify this
 
-   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(pMbAntiReadMsg->GetOriginalAgent().GetId()),
-                                    fRouter->GetDirectionByLpRank(pMbAntiReadMsg->GetOriginalAgent().GetRank()),
-                                    pMbAntiReadMsg->GetNumberOfHops());
+  fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(pMbAntiReadMsg->GetOriginalAgent().GetId()),
+                                   fRouter->GetDirectionByLpRank(pMbAntiReadMsg->GetOriginalAgent().GetRank()),
+                                   pMbAntiReadMsg->GetNumberOfHops());
 }
 
 void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
   unsigned long mbOwnerId = pMbAntiWriteMsg->GetMbOwnerId();
-   if (fGVT > pMbAntiWriteMsg->GetTimestamp()) {
-      LOG(logERROR) << "";
-      return;
-   }
-   RollbackList rollbackList;
-    fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetOriginalAgent().GetId(), pMbAntiWriteMsg->GetOriginalAgent(),
-                                 pMbAntiWriteMsg->GetTimestamp(), rollbackList);
-   rollbackList.SendRollbacks(this, pMbAntiWriteMsg->GetRollbackTag());
+  if (fGVT > pMbAntiWriteMsg->GetTimestamp()) {
+    LOG(logERROR) << "";
+    return;
+  }
+  RollbackList rollbackList;
+  fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetOriginalAgent().GetId(), pMbAntiWriteMsg->GetOriginalAgent(),
+                               pMbAntiWriteMsg->GetTimestamp(), rollbackList);
+  rollbackList.SendRollbacks(this, pMbAntiWriteMsg->GetRollbackTag());
 #ifdef SSV_LOCALISATION
   // Update the access count for state migration
   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(mbOwnerId),
@@ -626,12 +627,12 @@ void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
 }
 
 void Clp::ProcessMessage(const SingleReadAntiMessage *pSingleReadAntiMessage) {
-   // Check for rollbacks to before GVT
-   if (fGVT > pSingleReadAntiMessage->GetTimestamp()) {
-      LOG(logERROR) << "Clp::ProcessMessage(SingleReadAntiMessage)(" << GetRank()
-                    << ")# Trying to rollback to before GVT: " << fGVT << ", message: " << *pSingleReadAntiMessage;
-      return;
-   }
+  // Check for rollbacks to before GVT
+  if (fGVT > pSingleReadAntiMessage->GetTimestamp()) {
+    LOG(logERROR) << "Clp::ProcessMessage(SingleReadAntiMessage)(" << GetRank()
+                  << ")# Trying to rollback to before GVT: " << fGVT << ", message: " << *pSingleReadAntiMessage;
+    return;
+  }
 #ifdef RANGE_QUERIES
   // Clear range updates
   fRangeRoutingTable[HERE]->ClearRangeUpdates();
@@ -831,7 +832,8 @@ void Clp::Finalise() {
 }
 
 #ifdef SSV_LOCALISATION
-void Clp::ProcessMessage(const StateMigrationMessage* pStateMigrationMessage) {
+
+void Clp::ProcessMessage(const StateMigrationMessage *pStateMigrationMessage) {
 #ifdef RANGE_QUERIES
   // Clear range updates
   fRangeRoutingTable[HERE]->ClearRangeUpdates();

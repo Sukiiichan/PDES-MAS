@@ -37,6 +37,8 @@ namespace pdesmas {
       map<unsigned long, bool> agent_cancel_flag_map_;
       int fParentClp;
       Mutex fProcessMessageMutex;
+      // map<LpId, vector<tuple<unsigned long,  unsigned long >>> MbWriteMap;
+      // map<sender,vector(tuple(time,receiver))>
 
 
       bool ProcessRollback(const RollbackMessage *);

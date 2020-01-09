@@ -45,7 +45,7 @@ const SerialisableList<MbMail> &MailboxVariable::GetMessageList() const {
 
 // AddMsgList
 
-void MailboxVariable::PeformReadRB(const unsigned long pOwnerId, unsigned long pTime) {
+void MailboxVariable::PeformReadAnti(const unsigned long pOwnerId, unsigned long pTime) {
   if (pTime > readUntil) {
     LOG(logERROR) << "";
     exit(0);
@@ -53,6 +53,7 @@ void MailboxVariable::PeformReadRB(const unsigned long pOwnerId, unsigned long p
     LOG(logERROR) << "";
     exit(0);
   }
+  // TODO what if already read
 //   auto MbvIterator = messageList.begin();
 //   while(MbvIterator != messageList.end()){
 //      if(MbvIterator->GetTime()>=pTime){
@@ -64,13 +65,12 @@ void MailboxVariable::PeformReadRB(const unsigned long pOwnerId, unsigned long p
   readUntil = pTime;
 }
 
-void MailboxVariable::PerformWriteRB(const LpId &pSender, unsigned long pTime, RollbackList pRollbackList) {
+void MailboxVariable::PerformWriteAnti(const LpId &pSender, unsigned long pTime, RollbackList pRollbackList) {
   RemoveMbMessage(pSender, pTime);
   if (pTime <= this->GetReadUntil()) {
+    // TODO call RB
     pRollbackList.AddLp(this->ownerAgent, pTime);
   }
-
-  // TODO handle RB
 }
 
 bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender) {
@@ -85,7 +85,6 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
         if (mbMessageIterator->GetTime() > pTime) {
           messageList.insert(mbMessageIterator, std::move(newMsg));
           // adding of write records done in MbSS
-
           break;
         }
 
@@ -95,7 +94,19 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
     return true;
   } else {
     spdlog::warn("MB rollback condition met");
-    readUntil = pTime;
+    // TODO RB mailbox owner to pTime
+    auto mlIter = messageList.begin();
+    auto newMsg = MbMail(pTime, pValue, pSender);
+    while (mlIter->GetTime()<=readUntil){
+      if(mlIter->GetTime()>pTime){
+        messageList.insert(mlIter, newMsg);
+        mlIter --;
+        readUntil = mlIter->GetTime();
+        //readUntil = 1 msg before pTime
+        break;
+      }
+      ++ mlIter;
+    }
     return false;
   }
 }
