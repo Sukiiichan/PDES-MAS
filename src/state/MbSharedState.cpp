@@ -119,11 +119,10 @@ void MbSharedState::RollbackRead(const unsigned long pOwnerId, unsigned long pTi
 }
 
 
-void MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime,
-                                  RollbackList pRollbackList) {
+void MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime, bool &rb_needed) {
   SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
   MailboxVariable *mbv = MailboxVariableMap[mbvId];
-  //unsigned long readUntil = MailboxVariableMap.find(mbvId)->second.GetReadUntil();
+  // unsigned long readUntil = MailboxVariableMap.find(mbvId)->second->GetReadUntil();
 
   // two situations here
   // one: the message haven't been read yet
@@ -132,7 +131,8 @@ void MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSen
   // then delete it from statebase
   // and roll back the owner (add it into the rollbacklist)
 
-  mbv->PerformWriteAnti(pSender, pTime, pRollbackList);
+  mbv->PerformWriteAnti(pSender, pTime, rb_needed);
+
 }
 
 //void MbSharedState::RemoveMessageList(const SsvId &, RollbackList &) {}
@@ -172,4 +172,10 @@ int MbSharedState::GetRankFromAgentId(unsigned long agentId) {
 
 void MbSharedState::SetMailboxAgentMap(const map<unsigned long, SsvId> &maMap) {
   MailboxAgentMap = maMap;
+}
+
+void MbSharedState::RemoveOldMessages(unsigned long agentId, unsigned long pTime) {
+  SsvId mbvId = MailboxAgentMap.find(agentId)->second;
+  MailboxVariable *mbv = MailboxVariableMap[mbvId];
+  mbv->RemoveOldMessage(pTime);
 }

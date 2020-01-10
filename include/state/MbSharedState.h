@@ -58,12 +58,11 @@ namespace pdesmas {
 
         void RollbackRead(const unsigned long pOwnerId, unsigned long pTime);
 
-        void RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime,
-                           RollbackList pRollbackList);
+        void RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime, bool &rb_needed);
 
         // RollbackList GetRollbacklist(const LpId&, unsigned long);
 
-        void RemoveMbMessages(unsigned long);
+        void RemoveOldMessages(unsigned long agentId, unsigned long pTime); // garbage collection
 
         void RemoveMessageList(const SsvId &, RollbackList &);
 

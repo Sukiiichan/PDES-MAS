@@ -45,7 +45,7 @@ namespace pdesmas {
 
         void PeformReadAnti(const unsigned long pOwnerId, unsigned long pTime);
 
-        void PerformWriteAnti(const LpId &pSender, unsigned long pTime, RollbackList pRollbackList);
+        void PerformWriteAnti(const LpId &pSender, unsigned long pTime, bool &rb_needed);
 
         vector<pair<LpId, unsigned long>> GetRbList(unsigned long);
 

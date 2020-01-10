@@ -46,14 +46,13 @@ const SerialisableList<MbMail> &MailboxVariable::GetMessageList() const {
 // AddMsgList
 
 void MailboxVariable::PeformReadAnti(const unsigned long pOwnerId, unsigned long pTime) {
-  if (pTime > readUntil) {
+  if (pTime >= readUntil) {
     LOG(logERROR) << "";
     exit(0);
   } else if (pOwnerId != ownerAgentId) {
     LOG(logERROR) << "";
     exit(0);
   }
-  // TODO what if already read
 //   auto MbvIterator = messageList.begin();
 //   while(MbvIterator != messageList.end()){
 //      if(MbvIterator->GetTime()>=pTime){
@@ -62,14 +61,30 @@ void MailboxVariable::PeformReadAnti(const unsigned long pOwnerId, unsigned long
 //         MbvIterator++;
 //      }
 //   }
-  readUntil = pTime;
+  auto mbMessageIterator = messageList.begin();
+  while(mbMessageIterator->GetTime()<readUntil){
+    if(mbMessageIterator->GetTime()>=pTime){
+      break;
+    }
+    mbMessageIterator ++;
+  }
+  mbMessageIterator --;
+  readUntil = mbMessageIterator->GetTime();
+  // readUntil = pTime;
 }
 
-void MailboxVariable::PerformWriteAnti(const LpId &pSender, unsigned long pTime, RollbackList pRollbackList) {
+void MailboxVariable::PerformWriteAnti(const LpId &pSender, unsigned long pTime, bool &rb_needed) {
   RemoveMbMessage(pSender, pTime);
-  if (pTime <= this->GetReadUntil()) {
-    // TODO call RB
-    pRollbackList.AddLp(this->ownerAgent, pTime);
+  if (pTime <= readUntil) {
+    // TODO call RB, get RB timestamp
+    rb_needed = true;
+//    auto mbMessageIterator = messageList.begin();
+//    while(mbMessageIterator->GetTime()<readUntil){
+//      mbMessageIterator ++;
+//    }
+//    mbMessageIterator --;
+//    rb_time = mbMessageIterator->GetTime();
+    // pRollbackList.AddLp(this->ownerAgent, pTime);
   }
 }
 
@@ -93,7 +108,6 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
     }
     return true;
   } else {
-    spdlog::warn("MB rollback condition met");
     // TODO RB mailbox owner to pTime
     auto mlIter = messageList.begin();
     auto newMsg = MbMail(pTime, pValue, pSender);
@@ -102,6 +116,7 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
         messageList.insert(mlIter, newMsg);
         mlIter --;
         readUntil = mlIter->GetTime();
+        // TODO may move to antiread processing
         //readUntil = 1 msg before pTime
         break;
       }

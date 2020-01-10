@@ -555,17 +555,19 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
   bool write_success = fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAgent(),
                                                  pMailboxWriteMessage->GetMbOwnerId(), time, value);
   //RollbackList rollbackList = fMbSharedState.GetRollbacklist(receiver, time);
+  writeStatus = write_success ? writeSUCCESS : writeFAILURE;
+  if (!write_success) {
 
-  if (write_success) {
-    writeStatus = writeSUCCESS;
-  } else {
     // the receiver is rolled back
     // see len(rblist) else RB
     // Receiver Agent RB to ptime, send Anti-Read msg
     // TODO call sys to RB receiver, add sending of antimsgs to RB handling
+    spdlog::warn("MB rollback condition met, sending message");
+    //FIXME: Multiple MB message at same ts may cause duplicate RBTag
     RollbackMessage *rollbackMessage = new RollbackMessage();
     rollbackMessage->SetOrigin(this->GetRank());
     // rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
+    spdlog::warn("fMbSharedState.GetRankFromAgentId({})={}", mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId));
     rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
     // Rollback message timestamp is the time of the read to be rolled back
     rollbackMessage->SetTimestamp(time);
@@ -601,7 +603,6 @@ void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
   // RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAgent(),pMbAntiReadMsg->GetTimestamp());
   fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp());
   // rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
-  // TODO modify this
 
   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(pMbAntiReadMsg->GetOriginalAgent().GetId()),
                                    fRouter->GetDirectionByLpRank(pMbAntiReadMsg->GetOriginalAgent().GetRank()),
@@ -614,10 +615,23 @@ void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
     LOG(logERROR) << "";
     return;
   }
-  RollbackList rollbackList;
+  // RollbackList rollbackList;
+  // unsigned long rb_time = -1;
+  bool rb_needed = false;
   fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetOriginalAgent().GetId(), pMbAntiWriteMsg->GetOriginalAgent(),
-                               pMbAntiWriteMsg->GetTimestamp(), rollbackList);
-  rollbackList.SendRollbacks(this, pMbAntiWriteMsg->GetRollbackTag());
+                               pMbAntiWriteMsg->GetTimestamp(), rb_needed);
+  // rollbackList.SendRollbacks(this, pMbAntiWriteMsg->GetRollbackTag());
+  if (rb_needed) {
+    auto *rollbackMessage = new RollbackMessage();
+    rollbackMessage->SetOrigin(this->GetRank());
+    rollbackMessage->SetDestination(
+        fMbSharedState.GetRankFromAgentId(mbOwnerId)); // the receiver mb's owner, not the sender
+    RollbackTag rollbackTag(fMbSharedState.GetMbvId(mbOwnerId), pMbAntiWriteMsg->GetTimestamp(), ROLLBACK_BY_MBWRITE);
+    rollbackMessage->SetRollbackTag(rollbackTag);
+    rollbackMessage->SetTimestamp(pMbAntiWriteMsg->GetTimestamp());
+    rollbackMessage->SetOriginalAgent(LpId(mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId)));
+    rollbackMessage->SendToLp(this);
+  }
 #ifdef SSV_LOCALISATION
   // Update the access count for state migration
   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(mbOwnerId),
