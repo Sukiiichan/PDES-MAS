@@ -45,12 +45,21 @@ void MbAgent::Cycle() {
 
   spdlog::warn("Cycle begin, Agent {}, LVT {}", agent_id(), GetLVT());
 
-  srand(time(NULL));
-  default_random_engine eg;
-  uniform_int_distribution<int> distribution(100000, 999999);
+  srand(agent_id()*GetLVT());
+  vector<int> temp_vector;
+  for(int i=100000;i<999999;i++){
+    temp_vector.push_back(i);
+  }
+  random_shuffle(temp_vector.begin(),temp_vector.end());
+  auto tv_iter = temp_vector.begin();
+  // default_random_engine eg;
+  // uniform_int_distribution<int> distribution(100000, 999999);
   for (auto &i:sendList) {
-//    spdlog::debug("send to {0}", i);
-    auto msgSerial = distribution(eg);
+    int msgSerial = *tv_iter;
+    spdlog::debug("Msg serial of agent {0} is {1}", agent_id(), msgSerial);
+    tv_iter ++;
+  // spdlog::debug("send to {0}", i);
+  // auto msgSerial = distribution(eg);
     string msgContent = to_string(agent_id()) + "-0-" + to_string(msgSerial);
     // i is receiver id, 0 means direction
     bool tie = this->WriteMbString(i, msgContent, this->GetLVT() + 1);
@@ -66,6 +75,7 @@ void MbAgent::Cycle() {
 
   if (freqCounter < frequency) {
     freqCounter++;
+    spdlog::debug("round {0}", freqCounter);
   } else {
     freqCounter = 0;
   }
@@ -109,7 +119,7 @@ void MbAgent::Cycle() {
         // no action
 //        spdlog::debug("Agent{0}, recv new msg from Agent{1},serial{2}", agent_id(), sender, messageSerial);
       }
-      newMailIterator ++;
+      newMailIterator++;
     }
   }
 }
