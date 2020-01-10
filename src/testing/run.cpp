@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   if (sim.type() == "ALP") {
     for (int i = 0; i < 1; ++i) {
       TestAgent *test = new TestAgent(0, 10000, 10000 + sim.rank() * 100 + 1 + i);
-      sim.add_agent(test);
+      sim.add_agent(test, 0);
     }
 
   }

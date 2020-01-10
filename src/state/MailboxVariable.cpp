@@ -5,12 +5,12 @@ using namespace pdesmas;
 
 MailboxVariable::MailboxVariable() {}
 
-MailboxVariable::MailboxVariable(const SsvId &pSsvId, const LpId &pAgent) {
+MailboxVariable::MailboxVariable(const SsvId &pSsvId, const unsigned long pAgentId) {
   mbVariableID = pSsvId;
   readUntil = 0;
-  ownerAgentId = pAgent.GetId();
+  ownerAgentId = pAgentId;
   messageList = SerialisableList<MbMail>();
-  ownerAgent = pAgent;
+  //ownerAgent = pAgent;
   spdlog::warn("Constructor of MBV called");
 }
 
@@ -108,7 +108,7 @@ bool MailboxVariable::AddMbMessage(const AbstractValue *pValue, unsigned long pT
     }
     return true;
   } else {
-    // TODO RB mailbox owner to pTime
+    // RB mailbox owner to pTime
     auto mlIter = messageList.begin();
     auto newMsg = MbMail(pTime, pValue, pSender);
     while (mlIter->GetTime()<=readUntil){

@@ -15,19 +15,21 @@ class MbAgent : public Agent {
 public:
 
 
-    MbAgent(const unsigned long startTime, const unsigned long endTime, unsigned long agentId);
+  MbAgent(const unsigned long startTime, const unsigned long endTime, unsigned long agentId);
 
-    void Cycle() override;
+  ~MbAgent() override;
 
-    // void SetFrequency(unsigned int);
+  void Cycle() override;
 
-    void InitSendList(list<unsigned long> agList, unsigned int listLen,unsigned int seed);
+  // void SetFrequency(unsigned int);
+
+  void InitSendList(list<unsigned long> agList, unsigned int listLen, unsigned int seed);
 
 
 private:
-    unsigned int freqCounter;
-    unsigned int frequency;
-    list<unsigned long> sendList;
+  unsigned int freqCounter;
+  unsigned int frequency;
+  list<unsigned long> sendList;
 };
 
 

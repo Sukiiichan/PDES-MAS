@@ -85,7 +85,14 @@ void Simulation::Initialise() {
 void Simulation::Run() {
   MPI_Barrier(MPI_COMM_WORLD);
 
-  if (this->alp_ != nullptr) {
+  if (this->type() == "ALP" && this->alp_ != nullptr) {
+
+    for (auto a:alp_to_agent_list_map_[this->rank()]) {
+      this->alp_->AddAgent(a);
+      spdlog::debug("ALP {} adding agent {}", this->rank(), a->agent_id());
+    }
+
+    spdlog::info("ALP {}, {} agents attached", this->rank(), this->alp_->GetNumOfAttachedAgents());
 
     this->alp_->StartAllAgents();
     spdlog::debug("All agents started");
@@ -93,7 +100,7 @@ void Simulation::Run() {
     alp_->Run();
 
 
-  } else if (this->clp_ != nullptr) {
+  } else if (this->type() == "CLP" && this->clp_ != nullptr) {
     spdlog::debug("CLP running {0}", this->clp_->GetRank());
 
     clp_->Run();
@@ -131,21 +138,22 @@ string Simulation::type() {
   return "NONE";
 }
 
-void Simulation::add_agent(Agent *agent) {
-  // TODO init mailbox variable after add agent
-  if (this->alp_ != nullptr) {
-    this->alp_->AddAgent(agent);
-    // initialisor_->preload_variable();
+Simulation Simulation::add_agent(Agent *agent, int toAlp) {
+  // record info first
 
-  } else {
-    spdlog::error("Agent is nullptr!");
-    exit(1);
+  if (alp_to_agent_list_map_.find(toAlp) == alp_to_agent_list_map_.end()) {
+    alp_to_agent_list_map_[toAlp] = list<Agent *>();
   }
+  alp_to_agent_list_map_[toAlp].push_back(agent);
+  initialisor_->load_agent_info(agent->agent_id(), toAlp);
+
+  return *this;
+
 }
 
 
-Simulation &Simulation::init_mailbox(unsigned long agentId,int alpRank, int clpId) {
-  initialisor_->preload_mailbox(agentId, alpRank,clpId);
+Simulation &Simulation::init_mailbox(unsigned long agentId, int alpRank, int clpId) {
+  initialisor_->preload_mailbox(agentId, alpRank, clpId);
   return *this;
 }
 

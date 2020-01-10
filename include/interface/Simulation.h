@@ -58,6 +58,7 @@ private:
   unsigned long end_time_;
   map<int, DummyNode *> topology_;
   Initialisor *initialisor_;
+  map<int, list<Agent *>> alp_to_agent_list_map_;
 public:
   Simulation();
 
@@ -68,7 +69,6 @@ public:
   void Construct(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time);
 
   void Initialise();
-
 
 
   Simulation &set_topology(const string &topo);
@@ -100,7 +100,7 @@ public:
 
   string type();
 
-  void add_agent(Agent *agent);
+  Simulation add_agent(Agent *agent, int toAlp);
 
   unsigned long GVT();
 };

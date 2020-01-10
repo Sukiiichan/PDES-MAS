@@ -94,8 +94,9 @@ Agent::SendWriteMessageAndGetResponse(unsigned long pVariableId, T pValue, unsig
 
 }
 
-const MbReadResponseMsg* Agent::SendMbReadMessageAndGetResponse(unsigned long timestamp) {
-  LOG(logFINEST) << "Agent::SendMbReadMessageAndGetResponse(" << attached_alp_->GetRank() << ")# Set LVT to: " << timestamp;
+const MbReadResponseMsg *Agent::SendMbReadMessageAndGetResponse(unsigned long timestamp) {
+  LOG(logFINEST) << "Agent::SendMbReadMessageAndGetResponse(" << attached_alp_->GetRank() << ")# Set LVT to: "
+                 << timestamp;
   MailboxReadMessage *mailboxReadMessage = new MailboxReadMessage();
   mailboxReadMessage->SetOrigin(attached_alp_->GetRank());
   mailboxReadMessage->SetDestination(attached_alp_->GetParentClp());
@@ -107,7 +108,7 @@ const MbReadResponseMsg* Agent::SendMbReadMessageAndGetResponse(unsigned long ti
   WaitUntilMessageArrive();
   const AbstractMessage *rsp = attached_alp_->GetResponseMessage(agent_identifier_.GetId());
   // TODO may need to print log here instead
-  return (const MbReadResponseMsg*) rsp;
+  return (const MbReadResponseMsg *) rsp;
 }
 
 
@@ -389,13 +390,13 @@ Agent::RangeQueryPoint(const Point start, const Point end, unsigned long timesta
   return r;
 }
 
-const SerialisableList<MbMail> Agent::RequestNewMails(unsigned long pOwnerId, unsigned long timestamp){
+const SerialisableList<MbMail> Agent::RequestNewMails(unsigned long pOwnerId, unsigned long timestamp) {
   assert(timestamp > this->GetLVT());
   const MbReadResponseMsg *resp = SendMbReadMessageAndGetResponse(timestamp);
   auto result = resp->GetMailList();
   this->SetLVT(timestamp);
 
-   return result;
+  return result;
 }
 
 void Agent::NotifyMessageArrive() {
@@ -406,6 +407,9 @@ void Agent::ResetMessageArriveSemaphore() {
   this->message_waiting_sem_.Reset();
 }
 
+Agent::~Agent() {
+
+}
 
 
 

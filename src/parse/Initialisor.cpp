@@ -57,9 +57,9 @@ void Initialisor::attach_alp_to_clp(int alp, int clp) {
   fAlpToClpMap[alp] = clp;
 }
 
-void Initialisor::preload_mailbox(unsigned long agentId, int agentRank,int clpId) {
+void Initialisor::preload_mailbox(unsigned long agentId, int agentRank, int clpId) {
   auto mbvId = agentId;
-  if(fClpIdAgentMbIdMap.find(clpId) == fClpIdAgentMbIdMap.end()){
+  if (fClpIdAgentMbIdMap.find(clpId) == fClpIdAgentMbIdMap.end()) {
     fClpIdAgentMbIdMap.insert(make_pair(clpId, list<unsigned long>()));
   }
   fClpIdAgentMbIdMap[clpId].push_back(mbvId);
@@ -409,6 +409,14 @@ void Initialisor::InitEverything() {
   MbReadResponseMsg();
   MbReadAntiMsg();
   MbWriteAntiMsg();
+}
+
+void Initialisor::load_agent_info(unsigned long agentId, int attachedAlpRank) {
+  fAgentIdAlpRankMap[agentId] = attachedAlpRank;
+}
+
+const map<unsigned long, int> &Initialisor::GetAgentIdAlpRankMap() const {
+  return fAgentIdAlpRankMap;
 }
 
 

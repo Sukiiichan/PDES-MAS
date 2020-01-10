@@ -43,7 +43,7 @@ bool MbSharedState::WriteMbMsg(const LpId &pSender, const unsigned long pReceive
   //spdlog::debug("Total num of mbv: {}",MailboxVariableMap.size());
   SsvId dstId = MailboxAgentMap.find(pReceiverId)->second;
   MailboxVariable *dstMbv = MailboxVariableMap.find(dstId)->second;
-  assert(MailboxVariableMap.find(dstId)!=MailboxVariableMap.end());
+  assert(MailboxVariableMap.find(dstId) != MailboxVariableMap.end());
   // TODO see the variable in map
   //spdlog::debug("prepare to add msg to {0}", dstId.id());
   // bool rollback_flag = dstMbv->AddMbMessage(pValue, pTime, pSender);
@@ -70,17 +70,16 @@ bool MbSharedState::WriteMbMsg(const LpId &pSender, const unsigned long pReceive
 // }
 
 
-void MbSharedState::Add(const SsvId &pSsvId, const LpId &pAgent) {
+void MbSharedState::Add(const SsvId &pSsvId, const unsigned long pAgentId) {
   if (ContainsVariable(pSsvId)) {
-    LOG(logERROR) << "";
+    spdlog::critical("MbSharedState::Add({0},{1}): Already contains {0}", pSsvId.id(), pAgentId);
     exit(1);
   }
-  fAgentIdToRankMap[pAgent.GetId()] = pAgent.GetRank();
 
-  MailboxVariableMap[pSsvId] = new MailboxVariable(pSsvId, pAgent);
-  MailboxAgentMap[pAgent.GetId()] = pSsvId;
+  MailboxVariableMap[pSsvId] = new MailboxVariable(pSsvId, pAgentId);
+  MailboxAgentMap[pAgentId] = pSsvId;
 #ifdef SSV_LOCALISATION
-  spdlog::debug("MbSharedState::Add({},({},{}))", pSsvId.id(), pAgent.GetId(), pAgent.GetRank());
+  spdlog::debug("MbSharedState::Add({},{})", pSsvId.id(), pAgentId);
   ACCalculator->InitialiseCounters(pSsvId);
 
 #endif
@@ -91,8 +90,8 @@ void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariab
     LOG(logERROR) << "";
     exit(1);
   }
-  const unsigned long pAgent = pMbVariable.GetOwnerAgentId();
-  MailboxVariableMap[pSsvId] = new MailboxVariable(pSsvId, LpId(pAgent, GetRankFromAgentId(pAgent)));
+  const unsigned long pAgentId = pMbVariable.GetOwnerAgentId();
+  MailboxVariableMap[pSsvId] = new MailboxVariable(pSsvId, pAgentId);
 #ifdef SSV_LOCALISATION
   ACCalculator->InitialiseCounters(pSsvId);
 
@@ -119,7 +118,8 @@ void MbSharedState::RollbackRead(const unsigned long pOwnerId, unsigned long pTi
 }
 
 
-void MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime, bool &rb_needed) {
+void
+MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime, bool &rb_needed) {
   SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
   MailboxVariable *mbv = MailboxVariableMap[mbvId];
   // unsigned long readUntil = MailboxVariableMap.find(mbvId)->second->GetReadUntil();
@@ -178,4 +178,8 @@ void MbSharedState::RemoveOldMessages(unsigned long agentId, unsigned long pTime
   SsvId mbvId = MailboxAgentMap.find(agentId)->second;
   MailboxVariable *mbv = MailboxVariableMap[mbvId];
   mbv->RemoveOldMessage(pTime);
+}
+
+void MbSharedState::SetAgentIdToRankMap(map<unsigned long, int> agentIdToRankMap) {
+  this->fAgentIdToRankMap = agentIdToRankMap;
 }

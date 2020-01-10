@@ -23,14 +23,21 @@ int main(int argc, char **argv) {
   list<unsigned long> agIdList;
   for (uint64_t i = numCLP; i < numCLP + numALP; ++i) {
     // attach alp tp clp
+    // i is the rank of clp
     sim.attach_alp_to_clp(i, (i - 1) / 2);
 
-    spdlog::info("attached alp{0} to clp{1}", i, (i - 1) / 2);
+    //spdlog::info("attached alp{0} to clp{1}", i, (i - 1) / 2);
     for (uint64_t j = 0; j < numAgents / numALP; ++j) {
-      sim.init_mailbox(1000000 + i * 100 + 1 + j, i, 0);
-      agIdList.push_back(1000000 + i * 100 + 1 + j);
+      // here j is the agent index in one alp
+      unsigned long agentId = 1000000 + i * 100 + 1 + j;
+      sim.init_mailbox(agentId, i, 0);
+      agIdList.push_back(agentId);
+      MbAgent *mbAg = new MbAgent(0, 10000, agentId);
+      mbAg->InitSendList(agIdList, 5, 114514);
+      sim.add_agent(mbAg, i);
     }
   }
+
 
 //  for(auto v:agIdList){
 //    // std::cout << v << " ";
@@ -44,14 +51,6 @@ int main(int argc, char **argv) {
   sim.Initialise();
 
   spdlog::info("Initialized, rank {0}, is {1}", sim.rank(), sim.type());
-  if (sim.type() == "ALP") {
-    spdlog::debug("ag initing");
-    for (uint64_t i = 0; i < numAgents / numALP; ++i) {
-      MbAgent *mbAg = new MbAgent(0, 10000, 1000000 + sim.rank() * 100 + 1 + i);
-      mbAg->InitSendList(agIdList, 5,114514);
-      sim.add_agent(mbAg);
-    }
-  }
 
 
   sim.Run();

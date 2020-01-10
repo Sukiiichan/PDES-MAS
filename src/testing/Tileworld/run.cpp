@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
   if (sim.type() == "ALP") {
     for (int i = 0; i < 1; ++i) {
       TileWorldAgent *test = new TileWorldAgent(0, end_time, sim.rank() * 100 + 1 + i + 10000, 100, 100, 10);
-      sim.add_agent(test);
+      sim.add_agent(test, 0);
     }
 
   }

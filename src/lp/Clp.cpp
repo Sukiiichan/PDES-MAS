@@ -48,6 +48,7 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
   // TODO add preload mbv
   auto ssv_id_value_map = initialisor->GetClpSsvIdValueMap(); // insert initial values
   auto clp_id_ssv_id_map = initialisor->GetClpToSsvMap();
+  auto agent_id_alp_rank_map = initialisor->GetAgentIdAlpRankMap();
   auto ssv_it = clp_id_ssv_id_map.find(this->GetRank());
   if (ssv_it != clp_id_ssv_id_map.end()) {
     auto my_ssv_list = ssv_it->second;
@@ -56,14 +57,15 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
     }
   }
 
-  auto clp_id_agentmb_id_map = initialisor->GetClpToMbMap();
-  auto mb_iter = clp_id_agentmb_id_map.find(this->GetRank());
-  if (mb_iter != clp_id_agentmb_id_map.end()) {
+  auto clp_id_agent_mb_id_map = initialisor->GetClpToMbMap();
+  auto mb_iter = clp_id_agent_mb_id_map.find(this->GetRank());
+  if (mb_iter != clp_id_agent_mb_id_map.end()) {
     auto mbv_list = mb_iter->second;
     for (auto &iter : mbv_list) {
       this->AddMailbox(iter);
     }
   }
+  fMbSharedState.SetAgentIdToRankMap(agent_id_alp_rank_map);
 
   fRouter = new Router(GetRank(), GetNumberOfClps(), initialisor);
 
@@ -81,13 +83,11 @@ Clp::Clp(unsigned int pRank, unsigned int pCommSize,
   // Wait for all CLPs and ALPs to come online
   MPI_Barrier(MPI_COMM_WORLD);
 
-  spdlog::debug("line 75 Route Added");
   // Initialise the MPI connections
   fMPIInterface->Signal();
   // Wait for all MPI connections to come online
   MPI_Barrier(MPI_COMM_WORLD);
 
-  spdlog::debug("line 81 Route Added");
 }
 
 void Clp::AddSSV(const SsvId &pSSVID, const AbstractValue *pValue) {
@@ -101,10 +101,10 @@ void Clp::AddSSV(const SsvId &pSSVID, const AbstractValue *pValue) {
   fSharedState.Add(pSSVID, pValue, fStartTime, LpId(0, 0));
 }
 
-void Clp::AddMailbox(unsigned long MbvId) {
-  auto mbvId = SsvId(MbvId);
+void Clp::AddMailbox(unsigned long agentId) {
+  auto mbvId = SsvId(agentId);
   // mbvId equals agentId
-  fMbSharedState.Add(mbvId, LpId(MbvId, 0));
+  fMbSharedState.Add(mbvId, agentId);
 }
 
 
@@ -561,10 +561,10 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
     // the receiver is rolled back
     // see len(rblist) else RB
     // Receiver Agent RB to ptime, send Anti-Read msg
-    // TODO call sys to RB receiver, add sending of antimsgs to RB handling
-    spdlog::warn("MB rollback condition met, sending message");
+    // call sys to RB receiver, add sending of antimsgs to RB handling
     //FIXME: Multiple MB message at same ts may cause duplicate RBTag
     RollbackMessage *rollbackMessage = new RollbackMessage();
+    spdlog::warn("rollback msg generating");
     rollbackMessage->SetOrigin(this->GetRank());
     // rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
     spdlog::warn("fMbSharedState.GetRankFromAgentId({})={}", mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId));
@@ -576,6 +576,7 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
     rollbackMessage->SetRollbackTag(rollbackTag);
     rollbackMessage->SetOriginalAgent(LpId(mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId)));
     rollbackMessage->SendToLp(this);
+    spdlog::warn("rollback msg sending to ALP {}, agent {}", fMbSharedState.GetRankFromAgentId(mbOwnerId), mbOwnerId);
   }
   auto *mbWriteResponseMsg = new MbWriteResponseMsg();
   mbWriteResponseMsg->SetOrigin(GetRank());

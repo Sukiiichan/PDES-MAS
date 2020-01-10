@@ -33,11 +33,11 @@ namespace pdesmas {
 
 
     template<typename T>
-    const MbWriteResponseMsg*
+    const MbWriteResponseMsg *
     SendMbWriteMessageAndGetResponse(unsigned long agentId, T pValue, unsigned long timestamp);
 
 
-    const MbReadResponseMsg*
+    const MbReadResponseMsg *
     SendMbReadMessageAndGetResponse(unsigned long timestamp);
 
 
@@ -112,6 +112,8 @@ namespace pdesmas {
 
   public:
     Agent(unsigned long const start_time, unsigned long const end_time, unsigned long agent_id);
+
+    virtual ~Agent()=0;
 
     void attach_alp(Alp *alp);
 

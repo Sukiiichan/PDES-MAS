@@ -17,7 +17,7 @@ MbAgent::MbAgent(const unsigned long startTime, const unsigned long endTime, uns
 
 void MbAgent::InitSendList(list<unsigned long> agList, unsigned int listLen, unsigned int seed) {
   list<unsigned long> rList;
-  spdlog::warn("size of agList {}", agList.size());
+  //spdlog::warn("size of agList {}", agList.size());
   srand(seed * agent_id());
   for (unsigned int i = 0; i < listLen; ++i) {
     auto random_index = random() % agList.size();
@@ -98,7 +98,7 @@ void MbAgent::Cycle() {
         // generate reply
         string replyMsgContent = to_string(agent_id()) + "-1-" + to_string(messageSerial);
         bool replyTie = this->WriteMbString(sender, replyMsgContent, this->GetLVT() + 1);
-//        spdlog::debug("Agent{0},request to reply Agent{1},serial{2}", agent_id(), sender, messageSerial);
+        spdlog::debug("Agent{0},request to reply Agent{1},serial{2}", agent_id(), sender, messageSerial);
 //        if (replyTie) {
 //          // received response msg
 //          spdlog::debug("Agent{0}, Agent{1}, MsgID{2}, write success", this->agent_id(), sender, messageSerial);
@@ -109,7 +109,12 @@ void MbAgent::Cycle() {
         // no action
 //        spdlog::debug("Agent{0}, recv new msg from Agent{1},serial{2}", agent_id(), sender, messageSerial);
       }
+      newMailIterator ++;
     }
   }
+}
+
+MbAgent::~MbAgent() {
+
 }
 

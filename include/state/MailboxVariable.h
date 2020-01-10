@@ -16,14 +16,14 @@ namespace pdesmas {
     private:
         SsvId mbVariableID;
         unsigned long  ownerAgentId;
-        LpId ownerAgent;
+        //LpId ownerAgent;
         SerialisableList<MbMail> messageList;
         unsigned long readUntil;
 
     public:
         MailboxVariable();
 
-        MailboxVariable(const SsvId &pSsvId, const LpId &pAgent);
+        MailboxVariable(const SsvId &pSsvId, const unsigned long pAgentId);
 
         MailboxVariable(const MailboxVariable &);
 

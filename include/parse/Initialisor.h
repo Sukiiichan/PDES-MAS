@@ -34,7 +34,7 @@ namespace pdesmas {
     map<unsigned int, list<unsigned long>> fClpIdAgentMbIdMap;
     map<unsigned int, unsigned int> fAlpToClpMap;
     map<SsvId, AbstractValue *> fClpSsvIdValueMap;
-
+    map<unsigned long, int> fAgentIdAlpRankMap;
 
     void ParseMessage(const string) const;
 
@@ -60,9 +60,11 @@ namespace pdesmas {
 
     void attach_alp_to_clp(int alp, int clp);
 
-    void preload_mailbox(unsigned long agentId, int agentRank,int clpId);
+    void preload_mailbox(unsigned long agentId, int agentRank, int clpId);
 
     void preload_variable(const string &type, unsigned long variable_id, const string &value, unsigned int clpId);
+
+    void load_agent_info(unsigned long agentId, int attachedAlpRank);
 
     void InitEverything();
 
@@ -75,6 +77,8 @@ namespace pdesmas {
     const map<SsvId, AbstractValue *> &GetClpSsvIdValueMap() const;
 
     const map<unsigned int, list<unsigned long>> &GetClpToMbMap() const;
+
+    const map<unsigned long, int> &GetAgentIdAlpRankMap() const;
   };
 }
 
