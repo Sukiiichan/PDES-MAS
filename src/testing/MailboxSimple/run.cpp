@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
       sim.init_mailbox(agentId, i, 0);
       agIdList.push_back(agentId);
       MbAgent *mbAg = new MbAgent(0, 10000, agentId);
-      mbAg->InitSendList(agIdList, 5, 114514);
+      mbAg->InitSendList(agIdList, 5);
       sim.add_agent(mbAg, i);
     }
   }

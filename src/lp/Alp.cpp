@@ -46,7 +46,7 @@ Alp::Alp(unsigned int pRank, unsigned int pCommSize,
   } else {
     LOG(logERROR)
       << "Alp::Alp# Couldn't initialise parent rank!";
-    exit(1);
+    exit(0);
   }
 
   fMPIInterface = new MpiInterface(this, this);
@@ -76,7 +76,7 @@ const AbstractMessage *Alp::GetResponseMessage(unsigned long agent_id) const {
   auto v = it->second;
   if (v == nullptr) {
     spdlog::error("GetResponseMessage nullptr encountered!!!");
-    exit(1);
+    exit(0);
   }
 
   //agent_response_map_.erase(it);
@@ -249,7 +249,7 @@ void Alp::Receive() {
       LOG(logERROR)
         << "Alp::Receive(" << GetRank()
         << ")# Received inappropriate message: " << *message;
-      exit(1);
+      exit(0);
   }
   fProcessMessageMutex.Unlock();
   /*
@@ -367,7 +367,7 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
   if (rollback_message_timestamp < 0) {
     LOG(logERROR) << "HasIDLVTMap::RollbackAgentLVT# Rollback time smaller then 0, agent: " << agent_id << ", LVT: "
                   << agent_lvt_map_[agent_id] << ", rollback time: " << rollback_message_timestamp;
-    exit(1);
+    exit(0);
   }
   if (rollback_message_timestamp >= agent_lvt_map_[agent_id]) {
     LOG(logERROR) << "HasIDLVTMap::RollbackAgentLVT# Rollback time not smaller then LVT, agent: " << agent_id
@@ -487,6 +487,7 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
           MbReadAntiMsg *mbAntiReadMsg = new MbReadAntiMsg();
           mbAntiReadMsg->SetOrigin(GetRank());
           mbAntiReadMsg->SetDestination(GetParentClp());
+          mbAntiReadMsg->SetMbOwnerId(mailboxReadMessage->GetMbOwnerId());
           mbAntiReadMsg->SetTimestamp(mailboxReadMessage->GetTimestamp());
           mbAntiReadMsg->SetNumberOfHops(0);
           mbAntiReadMsg->SetRollbackTag(pRollbackMessage->GetRollbackTag());
@@ -500,6 +501,7 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
           MbWriteAntiMsg *mbAntiWriteMsg = new MbWriteAntiMsg();
           mbAntiWriteMsg->SetOrigin(GetRank());
           mbAntiWriteMsg->SetDestination(GetParentClp());
+          mbAntiWriteMsg->SetMbOwnerId(mailboxWriteMessage->GetMbOwnerId());
           mbAntiWriteMsg->SetTimestamp(mailboxWriteMessage->GetTimestamp());
           mbAntiWriteMsg->SetNumberOfHops(0);
           mbAntiWriteMsg->SetRollbackTag(pRollbackMessage->GetRollbackTag());

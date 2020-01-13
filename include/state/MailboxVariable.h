@@ -19,6 +19,7 @@ namespace pdesmas {
         //LpId ownerAgent;
         SerialisableList<MbMail> messageList;
         unsigned long readUntil;
+      void AddMessageToMessageList(const MbMail &mail);
 
     public:
         MailboxVariable();
@@ -37,8 +38,7 @@ namespace pdesmas {
 
         const SerialisableList<MbMail> &GetMessageList() const;
 
-        bool AddMbMessage(const AbstractValue *, unsigned long pTime, const LpId &pSender);
-
+        bool InsertMbMessageWithRollback(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender);
         bool RemoveMbMessage(const LpId&, unsigned long);
 
         void RemoveOldMessage(unsigned long);

@@ -36,7 +36,7 @@ void Agent::Body() {
   spdlog::debug("LVT >= EndTime, agent exit, id={0}", this->agent_id());
 
   while (this->GetGVT() < end_time_) {
-    usleep(1000 * 1000);
+    usleep(1000);
     SendGVTMessage(); // Initiate GVT calculation to get ready for termination
     spdlog::info("Agent {} finsihed, GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(), this->GetLVT(),
                  this->GetAlpLVT());
@@ -99,6 +99,7 @@ const MbReadResponseMsg *Agent::SendMbReadMessageAndGetResponse(unsigned long ti
                  << timestamp;
   MailboxReadMessage *mailboxReadMessage = new MailboxReadMessage();
   mailboxReadMessage->SetOrigin(attached_alp_->GetRank());
+  mailboxReadMessage->SetMbOwnerId(this->agent_id());
   mailboxReadMessage->SetDestination(attached_alp_->GetParentClp());
   mailboxReadMessage->SetTimestamp(timestamp);
   mailboxReadMessage->SetNumberOfHops(0);

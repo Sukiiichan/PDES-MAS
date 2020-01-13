@@ -11,6 +11,17 @@
 using namespace pdesmas;
 using namespace std;
 
+class Mail
+{
+public:
+  unsigned long sender_;
+  unsigned long timestamp_;
+  string message_;
+
+  Mail(unsigned long sender, unsigned long timestamp, string message) : sender_(sender), timestamp_(timestamp),
+                                                                        message_(std::move(message)){};
+};
+
 class MbAgent : public Agent {
 public:
 
@@ -23,13 +34,22 @@ public:
 
   // void SetFrequency(unsigned int);
 
-  void InitSendList(list<unsigned long> agList, unsigned int listLen, unsigned int seed);
+  void InitSendList(list<unsigned long> agList, unsigned int listLen);
 
 
 private:
-  unsigned int freqCounter;
-  unsigned int frequency;
+
+  int frequency, freqCounter;
+
   list<unsigned long> sendList;
+  // MA INTERFACE: if true, initiate GVT sync. Flag will be automatically cleared
+  bool CheckSyncGVT();
+
+  // MA INTERFACE: send a mail (string content)
+  bool SendMail(unsigned long agentId, unsigned long timestamp, string mailContent);
+
+  // MA INTERFACE: receive mail
+  list<Mail> ReadMail(unsigned long timestamp);
 };
 
 

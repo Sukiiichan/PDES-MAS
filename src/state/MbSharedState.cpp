@@ -46,8 +46,8 @@ bool MbSharedState::WriteMbMsg(const LpId &pSender, const unsigned long pReceive
   assert(MailboxVariableMap.find(dstId) != MailboxVariableMap.end());
   // TODO see the variable in map
   //spdlog::debug("prepare to add msg to {0}", dstId.id());
-  // bool rollback_flag = dstMbv->AddMbMessage(pValue, pTime, pSender);
-  return dstMbv->AddMbMessage(pValue, pTime, pSender);
+  // bool rollback_flag = dstMbv->InsertMbMessageWithRollback(pValue, pTime, pSender);
+  return dstMbv->InsertMbMessageWithRollback(pValue, pTime, pSender);
 
 }
 //    auto mbWriteMapIter = MbWriteMap.find(pSender);
@@ -87,7 +87,7 @@ void MbSharedState::Add(const SsvId &pSsvId, const unsigned long pAgentId) {
 
 void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariable, RollbackList &pRbList) {
   if (ContainsVariable(pSsvId)) {
-    LOG(logERROR) << "";
+    spdlog::critical("MbSharedState::Insert({}) which already exist",pSsvId.id());
     exit(1);
   }
   const unsigned long pAgentId = pMbVariable.GetOwnerAgentId();
@@ -174,10 +174,10 @@ void MbSharedState::SetMailboxAgentMap(const map<unsigned long, SsvId> &maMap) {
   MailboxAgentMap = maMap;
 }
 
-void MbSharedState::RemoveOldMessages(unsigned long agentId, unsigned long pTime) {
-  SsvId mbvId = MailboxAgentMap.find(agentId)->second;
-  MailboxVariable *mbv = MailboxVariableMap[mbvId];
-  mbv->RemoveOldMessage(pTime);
+void MbSharedState::RemoveOldMessages(unsigned long pTime) {
+  for(auto i:MailboxVariableMap){
+    i.second->RemoveOldMessage(pTime);
+  }
 }
 
 void MbSharedState::SetAgentIdToRankMap(map<unsigned long, int> agentIdToRankMap) {

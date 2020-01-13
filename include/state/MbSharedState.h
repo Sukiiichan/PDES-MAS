@@ -63,7 +63,7 @@ namespace pdesmas {
 
     // RollbackList GetRollbacklist(const LpId&, unsigned long);
 
-    void RemoveOldMessages(unsigned long agentId, unsigned long pTime); // garbage collection
+    void RemoveOldMessages(unsigned long pTime); // garbage collection
 
     void RemoveMessageList(const SsvId &, RollbackList &);
 

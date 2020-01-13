@@ -19,6 +19,7 @@ Router::~Router() {
 bool Router::Route(RollbackMessage* pRollbackMessage) {
   Direction direction = fRouteTable.GetDirectionFromRank(pRollbackMessage->GetOriginalAgent().GetRank());
   if (direction == HERE) return true;
+
   pRollbackMessage->SetDestination(fRouteTable.GetRankFromDirection(direction));
   return false;
 }

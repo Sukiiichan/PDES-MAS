@@ -114,6 +114,7 @@ void Clp::SetGvt(unsigned long pGVT) {
   // Remove write periods before GVT
   spdlog::debug("Clp {}, SetGvt({}), remove write periods", GetRank(), fGVT);
   fSharedState.RemoveWritePeriods(fGVT);
+  fMbSharedState.RemoveOldMessages(fGVT);
 #ifdef RANGE_QUERIES
   // Clear range periods
   for (int ports = 0; ports < DIRECTION_SIZE; ports++)
@@ -426,6 +427,7 @@ void Clp::Receive() {
           << "Clp::Receive(" << GetRank()
           << ")# RollbackMessage received for this CLP while CLPs don't handle response messages! "
           << *receivedMessage;
+        spdlog::error("Message is from {} to {}", rollbackMessage->GetOrigin(), rollbackMessage->GetDestination());
       } else rollbackMessage->SendToLp(this);
     }
       break;
@@ -473,7 +475,7 @@ void Clp::Receive() {
       LOG(logERROR)
         << "Clp::Receive(" << GetRank() << ")# Received inappropriate message: "
         << *receivedMessage;
-      exit(1);
+      exit(0);
   }
 }
 
@@ -567,14 +569,15 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
     spdlog::warn("rollback msg generating");
     rollbackMessage->SetOrigin(this->GetRank());
     // rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
-    spdlog::warn("fMbSharedState.GetRankFromAgentId({})={}", mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId));
-    rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
+    // spdlog::warn("fMbSharedState.GetRankFromAgentId({})={}", mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId));
+    rollbackMessage->SetDestination(pMailboxWriteMessage->GetOriginalAgent().GetRank());
     // Rollback message timestamp is the time of the read to be rolled back
     rollbackMessage->SetTimestamp(time);
+
     // Mattern colour set by GVT Calculator
     RollbackTag rollbackTag(fMbSharedState.GetMbvId(mbOwnerId), time, ROLLBACK_BY_MBWRITE);
     rollbackMessage->SetRollbackTag(rollbackTag);
-    rollbackMessage->SetOriginalAgent(LpId(mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId)));
+    rollbackMessage->SetOriginalAgent(pMailboxWriteMessage->GetOriginalAgent());
     rollbackMessage->SendToLp(this);
     spdlog::warn("rollback msg sending to ALP {}, agent {}", fMbSharedState.GetRankFromAgentId(mbOwnerId), mbOwnerId);
   }
@@ -602,6 +605,8 @@ void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
     return;
   }
   // RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAgent(),pMbAntiReadMsg->GetTimestamp());
+  // FIXME: Mail should have a unique id to handle anti operation
+  // could use w
   fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp());
   // rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
 
@@ -613,13 +618,14 @@ void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
 void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
   unsigned long mbOwnerId = pMbAntiWriteMsg->GetMbOwnerId();
   if (fGVT > pMbAntiWriteMsg->GetTimestamp()) {
-    LOG(logERROR) << "";
-    return;
+    spdlog::critical("Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) message timestamp {} < GVT {}",
+                     pMbAntiWriteMsg->GetTimestamp(), fGVT);
+    exit(1);
   }
   // RollbackList rollbackList;
   // unsigned long rb_time = -1;
   bool rb_needed = false;
-  fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetOriginalAgent().GetId(), pMbAntiWriteMsg->GetOriginalAgent(),
+  fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetMbOwnerId(), pMbAntiWriteMsg->GetOriginalAgent(),
                                pMbAntiWriteMsg->GetTimestamp(), rb_needed);
   // rollbackList.SendRollbacks(this, pMbAntiWriteMsg->GetRollbackTag());
   if (rb_needed) {
