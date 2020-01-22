@@ -34,10 +34,10 @@ void Agent::Body() {
   }
   spdlog::debug("Agent {0} exit, LVT {1}, GVT {2}", this->agent_id(), this->GetLVT(), this->GetGVT());
   spdlog::debug("LVT >= EndTime, agent exit, id={0}", this->agent_id());
+  SendGVTMessage(); // Initiate GVT calculation to get ready for termination
 
   while (this->GetGVT() < end_time_) {
     usleep(1000);
-    SendGVTMessage(); // Initiate GVT calculation to get ready for termination
     spdlog::info("Agent {} finsihed, GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(), this->GetLVT(),
                  this->GetAlpLVT());
   }

@@ -23,6 +23,7 @@ void StateMigrationMessage::Serialise(ostream& pOstream) const {
   pOstream << DELIM_VAR_SEPARATOR << fOrigin;
   pOstream << DELIM_VAR_SEPARATOR << fDestination;
   pOstream << DELIM_VAR_SEPARATOR << fStateVariableMap;
+  pOstream << DELIM_VAR_SEPARATOR << fMbStateVariableMap;
   pOstream << DELIM_RIGHT;
 }
 
@@ -33,5 +34,7 @@ void StateMigrationMessage::Deserialise(istream& pIstream) {
   pIstream >> fDestination;
   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
   pIstream >> fStateVariableMap;
+  IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
+  pIstream >> fMbStateVariableMap;
   IgnoreTo(pIstream, DELIM_RIGHT);
 }

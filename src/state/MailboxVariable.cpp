@@ -102,6 +102,7 @@ void MailboxVariable::AddMessageToMessageList(const MbMail &mail) {
   for (auto i = messageList.begin(); i != messageList.end(); i++) {
     if (i->GetTime() >= mail.GetTime()) {
       messageList.insert(i, mail);
+      spdlog::debug("agent {0}, number of entries {1} at time {2}", ownerAgentId, messageList.size(),mail.GetTime());
       return;
     }
   }
@@ -118,7 +119,11 @@ MailboxVariable::InsertMbMessageWithRollback(const AbstractValue *pValue, unsign
   }
   auto newMsg = MbMail(pTime, pValue, pSender);
   this->AddMessageToMessageList(newMsg);
-  return pTime >= readUntil;
+  if (pTime <= readUntil) {
+    spdlog::debug("Rollback caused by write in MBV {}, readuntil {}, time {}", this->mbVariableID.id(), readUntil,
+                  pTime);
+  }
+  return pTime > readUntil;
 //  if (pTime >= readUntil) {
 //    auto mbMessageIterator = messageList.begin();
 //    auto newMsg = MbMail(pTime, pValue, pSender);
@@ -190,12 +195,14 @@ bool MailboxVariable::RemoveMbMessage(const LpId &pSender, unsigned long pTime) 
 
 void MailboxVariable::RemoveOldMessage(unsigned long pTime) {
   // delete read message received before pTime to save memory space
-  spdlog::debug("MailboxVariable::RemoveOldMessage# Remove message sent at {}", pTime);
+  spdlog::debug("MailboxVariable::RemoveOldMessage# Remove message sent at {}, MBV {}", pTime, mbVariableID.id());
   if (pTime >= messageList.begin()->GetTime() && pTime < readUntil) {
     auto mbMessageIterator = messageList.begin();
     while (mbMessageIterator->GetTime() <= pTime) {
-      mbMessageIterator = messageList.erase(mbMessageIterator);
+      ++mbMessageIterator;
     }
+    messageList.erase(messageList.begin(), mbMessageIterator);
+
   }
 }
 

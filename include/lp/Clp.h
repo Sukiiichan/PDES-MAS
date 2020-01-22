@@ -61,7 +61,7 @@ namespace pdesmas {
     AccessCostCalculator* fMbAccessCostCalculator;
       bool fStopLoadBalanceProcessing;
       void ProcessMessage(const StateMigrationMessage*);
-      void MigrateStateVariables(const map<Direction, list<SsvId> >&);
+      void MigrateStateVariables(const map<Direction, list<SsvId> > &pMigrationMap, unsigned int typeFlag);
 #endif
 #ifdef RANGE_QUERIES
       vector<RangeRoutingTable*> fRangeRoutingTable;

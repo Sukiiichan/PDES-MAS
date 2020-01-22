@@ -144,7 +144,7 @@ MbAgent::~MbAgent() {
 
 
 bool MbAgent::CheckSyncGVT() {
-  return true;
+  return (GetLVT() % 5 == 0) || (GetLVT() > GetEndTime() - 100);
 }
 
 

@@ -16,3 +16,11 @@ const SerialisableMap<SsvId, StateVariable >& HasStateVariableMap::GetStateVaria
 void HasStateVariableMap::SetStateVariableMap(const SsvId& pSsvId, const StateVariable& pStateVariable) {
   fStateVariableMap.insert(make_pair(pSsvId, pStateVariable));
 }
+
+const SerialisableMap<SsvId, MailboxVariable>& HasStateVariableMap::GetMbStateVariableMap() const {
+  return fMbStateVariableMap;
+}
+
+void HasStateVariableMap::SetMbStateVariableMap(const SsvId & pSsvId, const MailboxVariable & pMailboxVariable) {
+  fMbStateVariableMap.insert(make_pair(pSsvId, pMailboxVariable));
+}

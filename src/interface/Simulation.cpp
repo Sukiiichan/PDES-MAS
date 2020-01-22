@@ -16,6 +16,7 @@ void Simulation::InitMPI() {
   }
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size_);
   MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank_);
+  spdlog::debug("Process rank {}, pid {}", comm_rank_, getpid());
 }
 
 void Simulation::Construct(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time) {

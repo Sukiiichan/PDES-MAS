@@ -68,7 +68,8 @@ void SharedState::Insert(const SsvId& pSSVID, const StateVariable& pStateVariabl
 
     AbstractValue* value = writePeriodListIterator->GetValueCopy();
     WriteStatus status;
-    stateVariableMapIterator->second.WriteWithRollback(writePeriodListIterator->GetAgent(), value, writePeriodListIterator->GetStartTime(), status, pRollbackList);
+    stateVariableMapIterator->second.WriteWithRollback(writePeriodListIterator->GetAgent(), value,
+        writePeriodListIterator->GetStartTime(), status, pRollbackList);
 
 #ifdef RANGE_QUERIES
     Point* newValue = NULL;

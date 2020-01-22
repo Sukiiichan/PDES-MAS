@@ -6,7 +6,7 @@ using namespace pdesmas;
 
 int main(int argc, char **argv) {
   //spdlog::set_level(spdlog::level::debug);
-  spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::info);
 
   Simulation sim = Simulation();
   sim.InitMPI();
@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   uint64_t numCLP = numALP - 1;
 
   // construct system tree; execution time
-  sim.Construct(numCLP, numALP, 0, 10000);
+  sim.Construct(numCLP, numALP, 0, 1000);
   list<unsigned long> agIdList;
   for (uint64_t i = numCLP; i < numCLP + numALP; ++i) {
     // attach alp tp clp

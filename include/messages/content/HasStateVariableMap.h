@@ -11,14 +11,22 @@
 #include "SerialisableMap.h"
 #include "SsvId.h"
 #include "StateVariable.h"
+#include "MailboxVariable.h"
 
 namespace pdesmas {
   class HasStateVariableMap {
-    protected:
-      SerialisableMap<SsvId, StateVariable > fStateVariableMap;
-    public:
-      const SerialisableMap<SsvId, StateVariable >& GetStateVariableMap() const;
-      void SetStateVariableMap(const SsvId&, const StateVariable&);
+  protected:
+    SerialisableMap<SsvId, StateVariable> fStateVariableMap;
+    SerialisableMap<SsvId, MailboxVariable> fMbStateVariableMap;
+  public:
+    const SerialisableMap<SsvId, StateVariable> &GetStateVariableMap() const;
+
+    const SerialisableMap<SsvId, MailboxVariable> &GetMbStateVariableMap() const;
+
+    void SetStateVariableMap(const SsvId &, const StateVariable &);
+
+    void SetMbStateVariableMap(const SsvId &, const MailboxVariable &);
+
   };
 }
 

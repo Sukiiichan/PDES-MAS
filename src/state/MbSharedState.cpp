@@ -85,9 +85,9 @@ void MbSharedState::Add(const SsvId &pSsvId, const unsigned long pAgentId) {
 #endif
 }
 
-void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariable, RollbackList &pRbList) {
+void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariable, bool &rb_needed) {
   if (ContainsVariable(pSsvId)) {
-    spdlog::critical("MbSharedState::Insert({}) which already exist",pSsvId.id());
+    spdlog::critical("MbSharedState::Insert({}) which already exist", pSsvId.id());
     exit(1);
   }
   const unsigned long pAgentId = pMbVariable.GetOwnerAgentId();
@@ -98,10 +98,27 @@ void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariab
 #endif
 }
 
-void MbSharedState::Delete(const SsvId &) {}
+void MbSharedState::Delete(const SsvId &pSSVID) {
+  if (!ContainsVariable(pSSVID)) {
+    LOG(logERROR) << "MbSharedState::Delete# Trying to delete a non-existant variable!";
+    exit(1);
+  }
+  MailboxVariableMap.erase(pSSVID);
+#ifdef SSV_LOCALISATION
+  ACCalculator->RemoveSsvAccessRecord(pSSVID);
+  ACCalculator->RemoveSsvHopRecord(pSSVID);
+  ACCalculator->RemoveSsvFromList(pSSVID);
+#endif
+}
 
 
-MailboxVariable MbSharedState::GetCopy(const SsvId &) {
+MailboxVariable MbSharedState::GetCopy(const SsvId &pSSVID) {
+  if (!ContainsVariable(pSSVID)) {
+    LOG(logERROR) << "MbSharedState::GetCopy# Trying to get a non-existant variable!";
+    exit(1);
+  }
+  auto to_copy = MailboxVariableMap.find(pSSVID)->second;
+  return MailboxVariable(*to_copy);
 }
 
 SerialisableList<MbMail> MbSharedState::Read(const unsigned long pOwnerId, unsigned long pTime) {
@@ -175,11 +192,31 @@ void MbSharedState::SetMailboxAgentMap(const map<unsigned long, SsvId> &maMap) {
 }
 
 void MbSharedState::RemoveOldMessages(unsigned long pTime) {
-  for(auto i:MailboxVariableMap){
+  for (auto i:MailboxVariableMap) {
     i.second->RemoveOldMessage(pTime);
   }
 }
 
 void MbSharedState::SetAgentIdToRankMap(map<unsigned long, int> agentIdToRankMap) {
   this->fAgentIdToRankMap = agentIdToRankMap;
+}
+
+
+void MbSharedState::RemoveMessageList(const SsvId &pSSVID, bool &rb_needed) {
+  if (!ContainsVariable(pSSVID)) {
+    LOG(logERROR) << "MbSharedState::RemoveMessageList# Trying to rmv msgList on non-existant variable!";
+    exit(1);
+  }
+  auto mbvMapIter = MailboxVariableMap.find(pSSVID);
+  auto msgList = mbvMapIter->second->GetMessageList();
+  auto msgListIter = msgList.begin();
+  while (msgListIter != msgList.end()) {
+    mbvMapIter->second->PerformWriteAnti(msgListIter->GetSender(), msgListIter->GetTime(), rb_needed);
+    ++msgListIter;
+  }
+}
+
+
+unsigned long MbSharedState::GetOwnerId(const SsvId &pMbvId) {
+  return MailboxVariableMap.find(pMbvId)->second->GetOwnerAgentId();
 }

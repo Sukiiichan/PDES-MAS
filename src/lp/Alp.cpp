@@ -347,14 +347,14 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
 
   // Check if rollback already on tag list
   if (CheckRollbackTagList(pRollbackMessage->GetRollbackTag())) {
-    LOG(logFINEST)
-      << "Alp::ProcessRollback(" << GetRank()
-      << ")# Rollback message tag already on list, ignore rollback: "
-      << *pRollbackMessage;
+    spdlog::debug("Rollback message tag already on list, ignore rollback");
     return false;
   }
   // Check if rollback rolls back far enough
   if (pRollbackMessage->GetTimestamp() > GetAgentLvt(pRollbackMessage->GetOriginalAgent().GetId())) {
+    spdlog::debug("Rollback message time larger than LVT: {}>{}, ignore", pRollbackMessage->GetTimestamp(),
+                  GetAgentLvt(pRollbackMessage->GetOriginalAgent().GetId()));
+
     return false;
   }
   // Rollback message is good, rollback
@@ -611,9 +611,10 @@ void Alp::Initialise() {
 void Alp::Finalise() {
   spdlog::info("Entering ALP finalise");
 
-  for (auto a:managed_agents_) {
-    a.second->Join(); // wait for all agents to exit
-  }
+//  for (auto a:managed_agents_) {
+//    spdlog::debug("Wait for agent {} to finish",a.second->agent_id());
+//    a.second->Join(); // wait for all agents to exit
+//  }
   SendEndMessage();
 
 

@@ -42,7 +42,7 @@ namespace pdesmas {
 
     void Add(const SsvId &pSsvId, const unsigned long pAgentId);
 
-    void Insert(const SsvId &, const MailboxVariable &, RollbackList &);
+    void Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariable, bool &rb_needed);
 
     void Delete(const SsvId &);
 
@@ -55,6 +55,8 @@ namespace pdesmas {
 
     SsvId GetMbvId(const unsigned long pSenderId);
 
+    unsigned long GetOwnerId(const SsvId &pMbvId);
+
     SerialisableList<MbMail> Read(const unsigned long pOwnerId, unsigned long pTime);
 
     void RollbackRead(const unsigned long pOwnerId, unsigned long pTime);
@@ -65,7 +67,7 @@ namespace pdesmas {
 
     void RemoveOldMessages(unsigned long pTime); // garbage collection
 
-    void RemoveMessageList(const SsvId &, RollbackList &);
+    void RemoveMessageList(const SsvId &, bool & rb_needed);
 
     int GetRankFromAgentId(unsigned long agentId);
     void SetAgentIdToRankMap(map<unsigned long, int> agentIdToRankMap);
