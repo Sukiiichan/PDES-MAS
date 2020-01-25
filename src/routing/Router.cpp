@@ -173,3 +173,7 @@ bool Router::Route(MbWriteResponseMsg *pMbWriteResponseMsg) {
    pMbWriteResponseMsg->SetDestination(fRouteTable.GetRankFromDirection(direction));
    return false;
 }
+
+void Router::SetMbSsvIdDirection(SsvId SsvID, Direction pDirection) {
+  fRouteTable.SetMbSsvIdHost(SsvID, pDirection);
+}

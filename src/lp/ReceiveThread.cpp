@@ -24,7 +24,7 @@ AbstractMessage *ReceiveThread::Receive(MPI_Status *pStatus) const {
   MPI_Get_count(pStatus, MPI_BYTE, &receiveLength);
 
   // FIXME: MPI Probe will cause problem here (message truncated), that's only a temp fix
-  receiveLength = (receiveLength > 8192*8) ? receiveLength : 8192*8;
+  receiveLength = (receiveLength > 8192*16) ? receiveLength : 8192*16;
   //Allocate the receive buffer
   char *receiveBuffer = new char[receiveLength];
   //Call MPI_Recv

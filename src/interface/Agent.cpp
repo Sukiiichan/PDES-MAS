@@ -38,7 +38,7 @@ void Agent::Body() {
 
   while (this->GetGVT() < end_time_) {
     usleep(1000);
-    spdlog::info("Agent {} finsihed, GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(), this->GetLVT(),
+    spdlog::info("Agent {0} finished, GVT {1}, LVT {2}, ALP LVT {3}", this->agent_id(), this->GetGVT(), this->GetLVT(),
                  this->GetAlpLVT());
   }
 
@@ -62,7 +62,7 @@ const SingleReadResponseMessage *Agent::SendReadMessageAndGetResponse(unsigned l
   WaitUntilMessageArrive();
   const AbstractMessage *ret = attached_alp_->GetResponseMessage(agent_identifier_.GetId());
   if (ret->GetType() != SINGLEREADRESPONSEMESSAGE) {
-    spdlog::error("Expecting SINGLEREADRESPONSEMESSAGE, get {}", ret->GetType());
+    spdlog::error("Expecting SINGLEREADRESPONSEMESSAGE, get {0}", ret->GetType());
     exit(1);
   }
   //spdlog::debug("Message get, agent {0}",agent_id_);
@@ -185,6 +185,7 @@ void Agent::WaitUntilMessageArrive() {
     spdlog::error("Not correctly terminated with cancel flag set!");
     exit(1);
   }
+  this->SyncPoint();
 }
 
 void Agent::Finalise() {

@@ -9,18 +9,18 @@
 
 using namespace pdesmas;
 
-const SerialisableMap<SsvId, StateVariable >& HasStateVariableMap::GetStateVariableMap() const {
+const SerialisableMap<SsvId, StateVariable> &HasStateVariableMap::GetStateVariableMap() const {
   return fStateVariableMap;
 }
 
-void HasStateVariableMap::SetStateVariableMap(const SsvId& pSsvId, const StateVariable& pStateVariable) {
+void HasStateVariableMap::SetStateVariableMap(const SsvId &pSsvId, const StateVariable &pStateVariable) {
   fStateVariableMap.insert(make_pair(pSsvId, pStateVariable));
 }
 
-const SerialisableMap<SsvId, MailboxVariable>& HasStateVariableMap::GetMbStateVariableMap() const {
+const SerialisableMap<SsvId, MailboxVariable> &HasStateVariableMap::GetMbStateVariableMap() const {
   return fMbStateVariableMap;
 }
 
-void HasStateVariableMap::SetMbStateVariableMap(const SsvId & pSsvId, const MailboxVariable & pMailboxVariable) {
+void HasStateVariableMap::SetMbStateVariableMap(const SsvId &pSsvId, const MailboxVariable &pMailboxVariable) {
   fMbStateVariableMap.insert(make_pair(pSsvId, pMailboxVariable));
 }
