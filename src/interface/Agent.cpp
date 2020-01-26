@@ -127,7 +127,6 @@ const MbWriteResponseMsg *Agent::SendMbWriteMessageAndGetResponse(unsigned long 
   mbWriteMsg->SetNumberOfHops(0);
   mbWriteMsg->SetIdentifier(attached_alp_->GetNewMessageId());
   mbWriteMsg->SetOriginalAgent(agent_identifier_);
-  // TODO modify OriginalALP->Agent
   mbWriteMsg->SetValue(value);
 
   mbWriteMsg->SendToLp(attached_alp_);
@@ -224,26 +223,26 @@ void Agent::attach_alp(Alp *alp) {
 }
 
 const int Agent::ReadInt(unsigned long variable_id, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const SingleReadResponseMessage *ret = this->SendReadMessageAndGetResponse(variable_id, timestamp);
   auto v = dynamic_cast<const Value<int> *>(ret->GetValue())->GetValue();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
   return v;
 
 }
 
 
 const double Agent::ReadDouble(unsigned long variable_id, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
 
   const SingleReadResponseMessage *ret = this->SendReadMessageAndGetResponse(variable_id, timestamp);
   auto v = ((const Value<double> *) (ret->GetValue()))->GetValue();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
   return v;
 }
 
 const Point Agent::ReadPoint(unsigned long variable_id, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const SingleReadResponseMessage *ret = this->SendReadMessageAndGetResponse(variable_id, timestamp);
 //  ostringstream out=ostringstream();
 //  ret->Serialise(out);
@@ -260,15 +259,15 @@ const Point Agent::ReadPoint(unsigned long variable_id, unsigned long timestamp)
   //auto v = (dynamic_cast<const Value<Point> *>(ret->GetValue()))->GetValue();
   auto v = p->GetValue();
 
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
   return v;
 }
 
 const string Agent::ReadString(unsigned long variable_id, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const SingleReadResponseMessage *ret = this->SendReadMessageAndGetResponse(variable_id, timestamp);
   auto v = dynamic_cast<const Value<string> *>(ret->GetValue())->GetValue();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
   return v;
 }
 
@@ -305,98 +304,98 @@ bool Agent::WritePrivateString(unsigned long variable_id, string v) {
 }
 
 bool Agent::WriteInt(unsigned long variable_id, int value, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const WriteResponseMessage *ret = SendWriteMessageAndGetResponse<int>(variable_id, value, timestamp);
 
   WriteStatus status = ret->GetWriteStatus();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
   return status == writeSUCCESS;
 }
 
 bool Agent::WriteDouble(unsigned long variable_id, double value, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const WriteResponseMessage *ret = SendWriteMessageAndGetResponse<double>(variable_id, value, timestamp);
   assert(ret != nullptr);
   WriteStatus status = ret->GetWriteStatus();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return status == writeSUCCESS;
 }
 
 bool Agent::WritePoint(unsigned long variable_id, Point value, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const WriteResponseMessage *ret = SendWriteMessageAndGetResponse<Point>(variable_id, value, timestamp);
 
   WriteStatus status = ret->GetWriteStatus();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return status == writeSUCCESS;
 }
 
 bool Agent::WriteString(unsigned long variable_id, string value, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const WriteResponseMessage *ret = SendWriteMessageAndGetResponse<string>(variable_id, value, timestamp);
 
   WriteStatus status = ret->GetWriteStatus();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return status == writeSUCCESS;
 }
 
 bool Agent::WriteMbInt(unsigned long agent_id, int value, unsigned long timestamp) {
-  assert(timestamp > this->GetGVT());
+  assert(timestamp >= this->GetLVT());
   const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<int>(agent_id, value, timestamp);
 
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return true;
 }
 
 
 bool Agent::WriteMbDouble(unsigned long agent_id, double value, unsigned long timestamp) {
-  assert(timestamp > this->GetGVT());
+  assert(timestamp >= this->GetLVT());
   const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<double>(agent_id, value, timestamp);
 
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return true;
 }
 
 
 bool Agent::WriteMbPoint(unsigned long agent_id, Point value, unsigned long timestamp) {
-  assert(timestamp > this->GetGVT());
+  assert(timestamp >= this->GetLVT());
   const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<Point>(agent_id, value, timestamp);
 
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return true;
 }
 
 
 bool Agent::WriteMbString(unsigned long agent_id, string value, unsigned long timestamp) {
-  assert(timestamp > this->GetGVT());
+  assert(timestamp >= this->GetLVT());
   const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<string>(agent_id, value, timestamp);
 
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return true;
 }
 
 const SerialisableMap<SsvId, Value<Point> >
 Agent::RangeQueryPoint(const Point start, const Point end, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const RangeQueryMessage *ret = SendRangeQueryPointMessageAndGetResponse(timestamp, start, end);
   auto r = ret->GetSsvValueList();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return r;
 }
 
 const SerialisableList<MbMail> Agent::RequestNewMails(unsigned long pOwnerId, unsigned long timestamp) {
-  assert(timestamp > this->GetLVT());
+  assert(timestamp >= this->GetLVT());
   const MbReadResponseMsg *resp = SendMbReadMessageAndGetResponse(timestamp);
   auto result = resp->GetMailList();
-  this->SetLVT(timestamp);
+  this->SetLVT(timestamp + 1);
 
   return result;
 }

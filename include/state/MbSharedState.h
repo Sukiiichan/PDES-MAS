@@ -17,9 +17,8 @@ namespace pdesmas {
   private:
     map<SsvId, MailboxVariable *> MailboxVariableMap;
     map<unsigned long, SsvId> MailboxAgentMap; // map agentid with mailbox variable id
-    // map<LpId, vector<tuple<unsigned long,  unsigned long >>> MbWriteMap;
+    map<LpId, vector<tuple<unsigned long,  unsigned long >>> MbWriteMap;
     // map<sender,vector(tuple(time,receiver))>
-    RangeRoutingTable *RRTable;
     AccessCostCalculator *ACCalculator;
     map<unsigned long, int> fAgentIdToRankMap;
 
@@ -32,9 +31,7 @@ namespace pdesmas {
 
     void SetMailboxAgentMap(const map<unsigned long, SsvId> &);
 
-    vector<tuple<unsigned long, LpId>> GetMsgToRollback(const LpId &, unsigned long);
-
-    void SetRangeRoutingTable(RangeRoutingTable *);
+//    vector<tuple<unsigned long, LpId>> GetMsgToRollback(const LpId &, unsigned long);
 
     void SetAccessCostCalculator(AccessCostCalculator *);
 
@@ -63,13 +60,14 @@ namespace pdesmas {
 
     void RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, unsigned long pTime, bool &rb_needed);
 
-    // RollbackList GetRollbacklist(const LpId&, unsigned long);
+    RollbackList GetRollbacklist(const LpId &, unsigned long);
 
     void RemoveOldMessages(unsigned long pTime); // garbage collection
 
-    void RemoveMessageList(const SsvId &, bool & rb_needed);
+    void RemoveMessageList(const SsvId &, bool &rb_needed, int& rb_ts);
 
     int GetRankFromAgentId(unsigned long agentId);
+
     void SetAgentIdToRankMap(map<unsigned long, int> agentIdToRankMap);
   };
 }

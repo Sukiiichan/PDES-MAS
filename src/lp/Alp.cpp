@@ -71,12 +71,15 @@ Alp::Alp(unsigned int pRank, unsigned int pCommSize,
 //}
 
 const AbstractMessage *Alp::GetResponseMessage(unsigned long agent_id) const {
-  assert(agent_response_map_.find(agent_id) != agent_response_map_.end());
+  if (agent_response_map_.find(agent_id) == agent_response_map_.end()) {
+    spdlog::critical("Alp::GetResponseMessage({}) not found in map!", agent_id);
+    exit(1);
+  }
   auto it = agent_response_map_.find(agent_id);
   auto v = it->second;
   if (v == nullptr) {
-    spdlog::error("GetResponseMessage nullptr encountered!!!");
-    exit(0);
+    spdlog::critical("GetResponseMessage nullptr encountered!!!");
+    exit(1);
   }
 
   //agent_response_map_.erase(it);
@@ -184,7 +187,7 @@ void Alp::Send() {
   }
   ostringstream out;
   message->Serialise(out);
-  spdlog::debug("ALP send message: {}", out.str());
+  spdlog::debug("ALP send message: {0}", out.str());
   fMPIInterface->Send(message);
 }
 
@@ -194,7 +197,7 @@ void Alp::Receive() {
   //spdlog::debug("Message arrived, rank {0}, type {1}", this->GetRank(), message->GetType());
   ostringstream out;
   message->Serialise(out);
-  spdlog::debug("ALP receive message: {}", out.str());
+  spdlog::debug("ALP receive message: {0}", out.str());
   fProcessMessageMutex.Lock();
   switch (message->GetType()) {
     case SINGLEREADRESPONSEMESSAGE: {
@@ -337,49 +340,41 @@ void Alp::ProcessMessage(const RangeQueryMessage *pRangeQueryMessage) {
  */
 bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
   // commonly used
-  spdlog::warn("MB rollback msg received");
 
   unsigned long rollback_message_timestamp = pRollbackMessage->GetTimestamp();
   unsigned long agent_id = pRollbackMessage->GetOriginalAgent().GetId();
+
   Agent *agent = managed_agents_[agent_id];
   // make sure agent under this ALP
   assert(HasAgent(agent_id));
 
   // Check if rollback already on tag list
   if (CheckRollbackTagList(pRollbackMessage->GetRollbackTag())) {
-    spdlog::debug("Rollback message tag already on list, ignore rollback");
+    spdlog::debug("Rollback message tag already on list, ignore rollback, agent {}",agent_id);
     return false;
   }
   // Check if rollback rolls back far enough
-  if (pRollbackMessage->GetTimestamp() > GetAgentLvt(pRollbackMessage->GetOriginalAgent().GetId())) {
-    spdlog::debug("Rollback message time larger than LVT: {}>{}, ignore", pRollbackMessage->GetTimestamp(),
-                  GetAgentLvt(pRollbackMessage->GetOriginalAgent().GetId()));
-
+  if (pRollbackMessage->GetTimestamp() > GetAgentLvt(agent_id)) {
+    spdlog::debug("Rollback message time larger than LVT: {0}>{1}, ignore, agent {2}", pRollbackMessage->GetTimestamp(),
+                  GetAgentLvt(agent_id),agent_id);
     return false;
   }
   // Rollback message is good, rollback
 
   // Reset LVT map
-  LOG(logFINEST) << "Alp::ProcessRollback(" << GetRank() << ")# Rollback agent : "
-                 << pRollbackMessage->GetOriginalAgent().GetId() << ", to LVT: " << pRollbackMessage->GetTimestamp();
-
 
   if (rollback_message_timestamp < 0) {
     LOG(logERROR) << "HasIDLVTMap::RollbackAgentLVT# Rollback time smaller then 0, agent: " << agent_id << ", LVT: "
                   << agent_lvt_map_[agent_id] << ", rollback time: " << rollback_message_timestamp;
-    exit(0);
+    exit(1);
   }
-  if (rollback_message_timestamp >= agent_lvt_map_[agent_id]) {
-    LOG(logERROR) << "HasIDLVTMap::RollbackAgentLVT# Rollback time not smaller then LVT, agent: " << agent_id
-                  << ", LVT: " << agent_lvt_map_[agent_id] << ", rollback time: " << rollback_message_timestamp;
-    //exit(1);
-  }
-  spdlog::warn("Process rollback!");
+
+  spdlog::debug("Process rollback!");
 
 
   // stop the agent
   agent->Abort();
-  spdlog::warn("Agent stopping");
+  spdlog::debug("Agent stopping");
 
 
   // cancel flag need to be set before resetting semaphore
@@ -397,14 +392,12 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
   //spdlog::warn("RESP deleted!");
 
 
-
-
   agent->Join();
-  spdlog::warn("Agent stopped");
+  spdlog::debug("Agent stopped");
   agent_response_message_id_map_[agent_id] = 0;
   // rollback LVT and history
   unsigned long rollback_to_timestamp = ULONG_MAX;
-  rollback_to_timestamp = rollback_message_timestamp; //FIXME: Should add LVT history
+  rollback_to_timestamp = rollback_message_timestamp;
   auto &agent_lvt_history = agent_lvt_history_map_[agent_id];
   for (auto iter:agent_lvt_history) {
     if (iter < rollback_message_timestamp) {
@@ -414,6 +407,8 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
     }
   }
   assert(rollback_to_timestamp < ULONG_MAX);
+  spdlog::warn("LOGRB {} {} {}", agent_id, rollback_to_timestamp, agent_lvt_map_[agent_id]);
+
   agent_lvt_map_[agent_id] = rollback_to_timestamp;
 
   spdlog::warn("Agent {0} rollback to timestamp {1}", agent_id, rollback_to_timestamp);
@@ -482,8 +477,8 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
         }
           break;
         case MAILBOXREADMESSAGE: {
-          spdlog::warn("Preparing to rollback read");
           MailboxReadMessage *mailboxReadMessage = static_cast<MailboxReadMessage *>(*iter);
+          spdlog::debug("Preparing to rollback read, agent {}, to {}", agent_id, mailboxReadMessage->GetTimestamp());
           MbReadAntiMsg *mbAntiReadMsg = new MbReadAntiMsg();
           mbAntiReadMsg->SetOrigin(GetRank());
           mbAntiReadMsg->SetDestination(GetParentClp());
@@ -496,7 +491,7 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
         }
           break;
         case MAILBOXWRITEMESSAGE: {
-          spdlog::warn("Preparing to rollback write");
+          spdlog::debug("Preparing to rollback write");
           MailboxWriteMessage *mailboxWriteMessage = static_cast<MailboxWriteMessage *>(*iter);
           MbWriteAntiMsg *mbAntiWriteMsg = new MbWriteAntiMsg();
           mbAntiWriteMsg->SetOrigin(GetRank());
@@ -569,6 +564,7 @@ unsigned long Alp::GetLvt() const {
 }
 
 void Alp::SetGvt(unsigned long pGvt) {
+  spdlog::warn("LOGGVT {},{}", this->GetRank(), pGvt);
   fGVT = pGvt;
   ClearSendList(pGvt);
   ClearRollbackTagList(pGvt);

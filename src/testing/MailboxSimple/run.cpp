@@ -6,7 +6,7 @@ using namespace pdesmas;
 
 int main(int argc, char **argv) {
   //spdlog::set_level(spdlog::level::debug);
-  spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::warn);
 
   Simulation sim = Simulation();
   sim.InitMPI();
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
       unsigned long agentId = 1000000 + i * 100 + 1 + j;
       sim.init_mailbox(agentId, i, 0);
       agIdList.push_back(agentId);
-      MbAgent *mbAg = new MbAgent(0, 10000, agentId);
+      MbAgent *mbAg = new MbAgent(0, 1000, agentId);
       mbAg->InitSendList(agIdList, 5);
       sim.add_agent(mbAg, i);
     }
