@@ -48,7 +48,7 @@ void MbAgent::Cycle() {
   struct timeval start;
   struct timeval end;
 
-  srand(agent_id() * GetLVT());
+  srand(agent_id() * (GetLVT() + 1));
 
   for (auto &i:sendList) {
     int msgSerial = rand() % 100000;
@@ -125,11 +125,13 @@ bool MbAgent::CheckSyncGVT() {
 
 
 bool MbAgent::SendMail(unsigned long agentId, unsigned long timestamp, string mailContent) {
+  this->ResetMessageArriveFlag();
   return this->WriteMbString(agentId, std::move(mailContent), timestamp);
 }
 
 
 list<Mail> MbAgent::ReadMail(unsigned long timestamp) {
+  this->ResetMessageArriveFlag();
   auto newMails = this->RequestNewMails(this->agent_id(), timestamp);
   list<Mail> result;
   for (auto &i:newMails) {

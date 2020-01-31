@@ -107,9 +107,11 @@ void Alp::Send() {
     switch (message->GetType()) {
       case SINGLEREADMESSAGE: {
         SingleReadMessage *singleReadMessage = static_cast<SingleReadMessage *>(message);
+
         AddToSendList(singleReadMessage);
         PreProcessSendMessage(singleReadMessage);
         agent_response_message_id_map_[singleReadMessage->GetOriginalAgent().GetId()] = singleReadMessage->GetIdentifier();
+
       }
         break;
       case SINGLEREADRESPONSEMESSAGE :
@@ -277,7 +279,7 @@ void Alp::ProcessMessage(const SingleReadResponseMessage *pSingleReadResponseMes
   if (agent_response_message_id_map_[agent_id] == pSingleReadResponseMessage->GetIdentifier()) {
     agent_response_map_[agent_id] = pSingleReadResponseMessage;
     Agent *agent = this->managed_agents_[agent_id];
-    agent->NotifyMessageArrive();
+    agent->SetMessageArriveFlag();
   }
 
 }
@@ -295,7 +297,7 @@ void Alp::ProcessMessage(const WriteResponseMessage *pWriteResponseMessage) {
   if (agent_response_message_id_map_[agent_id] == pWriteResponseMessage->GetIdentifier()) {
     agent_response_map_[agent_id] = pWriteResponseMessage;
     Agent *agent = this->managed_agents_[agent_id];
-    agent->NotifyMessageArrive();
+    agent->SetMessageArriveFlag();
   }
 }
 
@@ -306,7 +308,7 @@ void Alp::ProcessMessage(const MbReadResponseMsg *pMbReadResponseMsg) {
   if (agent_response_message_id_map_[agent_id] == pMbReadResponseMsg->GetIdentifier()) {
     agent_response_map_[agent_id] = pMbReadResponseMsg;
     Agent *agent = this->managed_agents_[agent_id];
-    agent->NotifyMessageArrive();
+    agent->SetMessageArriveFlag();
   }
 }
 
@@ -315,7 +317,7 @@ void Alp::ProcessMessage(const MbWriteResponseMsg *pMbWriteResponseMsg) {
   if (agent_response_message_id_map_[agent_id] == pMbWriteResponseMsg->GetIdentifier()) {
     agent_response_map_[agent_id] = pMbWriteResponseMsg;
     Agent *agent = this->managed_agents_[agent_id];
-    agent->NotifyMessageArrive();
+    agent->SetMessageArriveFlag();
   }
 }
 
@@ -326,7 +328,7 @@ void Alp::ProcessMessage(const RangeQueryMessage *pRangeQueryMessage) {
   if (agent_response_message_id_map_[agent_id] == pRangeQueryMessage->GetIdentifier()) {
     agent_response_map_[agent_id] = pRangeQueryMessage;
     Agent *agent = this->managed_agents_[agent_id];
-    agent->NotifyMessageArrive();
+    agent->SetMessageArriveFlag();
   }
 
 
@@ -350,13 +352,13 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
 
   // Check if rollback already on tag list
   if (CheckRollbackTagList(pRollbackMessage->GetRollbackTag())) {
-    spdlog::debug("Rollback message tag already on list, ignore rollback, agent {}",agent_id);
+    spdlog::debug("Rollback message tag already on list, ignore rollback, agent {}", agent_id);
     return false;
   }
   // Check if rollback rolls back far enough
   if (pRollbackMessage->GetTimestamp() > GetAgentLvt(agent_id)) {
     spdlog::debug("Rollback message time larger than LVT: {0}>{1}, ignore, agent {2}", pRollbackMessage->GetTimestamp(),
-                  GetAgentLvt(agent_id),agent_id);
+                  GetAgentLvt(agent_id), agent_id);
     return false;
   }
   // Rollback message is good, rollback
@@ -375,26 +377,16 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
   // stop the agent
   agent->Abort();
   spdlog::debug("Agent stopping");
-
-
+  // should have been stopped if not in final waiting stage
   // cancel flag need to be set before resetting semaphore
   SetCancelFlag(agent_id, true);
-  //spdlog::warn("Set cancel flag!");
-
-
-
-  // reset semaphore to release agent from waiting
-  agent->ResetMessageArriveSemaphore();
-  //spdlog::warn("Sem reset!");
+  // should have been stopped if in final waiting stage
+  agent->ResetMessageArriveFlag();
 
   //delete agent_response_map_[agent_id];
-  agent_response_map_[agent_id] = nullptr;
-  //spdlog::warn("RESP deleted!");
-
 
   agent->Join();
   spdlog::debug("Agent stopped");
-  agent_response_message_id_map_[agent_id] = 0;
   // rollback LVT and history
   unsigned long rollback_to_timestamp = ULONG_MAX;
   rollback_to_timestamp = rollback_message_timestamp;
@@ -437,7 +429,15 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
    */
   list<SharedStateMessage *> rollbackMessagesInSendList = RollbackSendList(pRollbackMessage->GetTimestamp(),
                                                                            pRollbackMessage->GetOriginalAgent());
-
+  MbReadAntiMsg *mbAntiReadMsg = new MbReadAntiMsg();
+  mbAntiReadMsg->SetOrigin(GetRank());
+  mbAntiReadMsg->SetDestination(GetParentClp());
+  mbAntiReadMsg->SetMbOwnerId(agent_id);
+  mbAntiReadMsg->SetTimestamp(rollback_to_timestamp);
+  mbAntiReadMsg->SetNumberOfHops(0);
+  mbAntiReadMsg->SetRollbackTag(pRollbackMessage->GetRollbackTag());
+  mbAntiReadMsg->SetOriginalAgent(LpId(agent_id, GetRank()));
+  mbAntiReadMsg->SendToLp(this);
   // TODO get send list for MB write RB from map
   for (list<SharedStateMessage *>::iterator iter = rollbackMessagesInSendList.begin();
        iter != rollbackMessagesInSendList.end();) {

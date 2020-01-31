@@ -598,13 +598,15 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
 
 void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
   if (fGVT > pMbAntiReadMsg->GetTimestamp()) {
-    LOG(logERROR) << "";
+
     return;
   }
+  spdlog::debug("MBV {} read rollback to {}", pMbAntiReadMsg->GetOriginalAgent().GetId(),
+                pMbAntiReadMsg->GetTimestamp() - 1);
   // RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAgent(),pMbAntiReadMsg->GetTimestamp());
   // FIXME: Mail should have a unique id to handle anti operation
   // could use w
-  fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp());
+  fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp() - 1);
   // rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
 
   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(pMbAntiReadMsg->GetOriginalAgent().GetId()),

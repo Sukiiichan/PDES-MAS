@@ -26,19 +26,21 @@ Agent::Agent(unsigned long const start_time, unsigned long const end_time, unsig
 
 
 void Agent::Body() {
-
   //spdlog::debug("Agent thread is up");
 
   while (GetLVT() < end_time_) {
+    spdlog::debug("Cycle begin");
     Cycle();
   }
   spdlog::debug("Agent {0} exit, LVT {1}, GVT {2}", this->agent_id(), this->GetLVT(), this->GetGVT());
   spdlog::debug("LVT >= EndTime, agent exit, id={0}", this->agent_id());
-  SendGVTMessage(); // Initiate GVT calculation to get ready for termination
-
   while (this->GetGVT() < end_time_) {
-    usleep(1000);
-    spdlog::info("Agent {0} finished, GVT {1}, LVT {2}, ALP LVT {3}", this->agent_id(), this->GetGVT(), this->GetLVT(),
+    if (this->attached_alp_->GetCancelFlag(this->agent_id())) {
+      return;
+    }
+    sleep(1);
+    SendGVTMessage(); // Initiate GVT calculation to get ready for termination
+    spdlog::info("Agent {} finsihed, GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(), this->GetLVT(),
                  this->GetAlpLVT());
   }
 
@@ -168,23 +170,13 @@ void Agent::SendGVTMessage() {
 
 
 void Agent::WaitUntilMessageArrive() {
-//  if (attached_alp_->GetCancelFlag(this->agent_id_)) {
-//    while (1) {
-//      this->Sleep(1000);
-//    }
-//  }
-  //Semaphore &semaphore_has_response_ = attached_alp_->GetWaitingSemaphore(agent_identifier_.GetId());
-  //spdlog::debug("Waiting... agent {0}",this->agent_id());
-  this->message_waiting_sem_.Wait();
-  //semaphore_has_response_.Wait();
-  //spdlog::debug("Wait finished! agent {0}",this->agent_id());
-  if (attached_alp_->GetCancelFlag(this->agent_id_)) {
-
-    this->SyncPoint();
-    spdlog::error("Not correctly terminated with cancel flag set!");
-    exit(1);
+  spdlog::debug("Waiting... agent {0}", this->agent_id());
+  while (!this->message_ready_) {
+    SyncPoint(); // busy waiting, make sure it can be interrupted
   }
+  spdlog::debug("Wait finished! agent {0}", this->agent_id());
   this->SyncPoint();
+  this->message_ready_ = false;
 }
 
 void Agent::Finalise() {
@@ -400,12 +392,13 @@ const SerialisableList<MbMail> Agent::RequestNewMails(unsigned long pOwnerId, un
   return result;
 }
 
-void Agent::NotifyMessageArrive() {
-  this->message_waiting_sem_.Signal();
+void Agent::SetMessageArriveFlag() {
+  message_ready_ = true;
 }
 
-void Agent::ResetMessageArriveSemaphore() {
-  this->message_waiting_sem_.Reset();
+void Agent::ResetMessageArriveFlag() {
+
+  message_ready_ = false;
 }
 
 Agent::~Agent() {

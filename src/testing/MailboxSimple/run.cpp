@@ -6,7 +6,7 @@ using namespace pdesmas;
 
 int main(int argc, char **argv) {
   //spdlog::set_level(spdlog::level::debug);
-  spdlog::set_level(spdlog::level::warn);
+  spdlog::set_level(spdlog::level::debug);
 
   Simulation sim = Simulation();
   sim.InitMPI();

@@ -97,28 +97,20 @@ MailboxVariable::InsertMbMessageWithRollback(const AbstractValue *pValue, unsign
 
 bool MailboxVariable::RemoveMbMessage(const LpId &pSender, unsigned long pTime) {
   spdlog::debug("MailboxVariable::RemoveMbMessage: Remove message sent at {0}, agent {1}", pTime, ownerAgentId);
-  SerialisableList<MbMail>::iterator mbMessageIterator = messageList.begin();
+  auto mbMessageIterator = messageList.begin();
+  bool no_rollback = pTime > readUntil;
   while (mbMessageIterator != messageList.end()) {
     if (mbMessageIterator->GetTime() == pTime) {
-      if (pTime < readUntil) {
-        return false;
-      } else if (mbMessageIterator->GetSender() != pSender) {
-        ++mbMessageIterator;
+      if (mbMessageIterator->GetSender() == pSender) {
+        messageList.erase(mbMessageIterator);
+        break;
       }
-      //FIXME: Rewrite this to avoid removing end()
-      if (mbMessageIterator != messageList.end()) {
-        mbMessageIterator = messageList.erase(mbMessageIterator);
-      }
-      break;
-    } else if (mbMessageIterator->GetTime() < pTime) {
-      ++mbMessageIterator;
-    } else {
-      break;
     }
+    ++mbMessageIterator;
   }
   spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->mbVariableID.id(), pTime, messageList.size() * 40);
 
-  return true;
+  return no_rollback;
 }
 
 void MailboxVariable::RemoveOldMessage(unsigned long pTime) {
