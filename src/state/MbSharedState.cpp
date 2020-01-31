@@ -4,9 +4,16 @@
 
 using namespace pdesmas;
 
+MbSharedState::MbSharedState() {
+  RRTable = NULL;
+  ACCalculator = NULL;
+}
 
 MbSharedState::~MbSharedState() {}
 
+void MbSharedState::SetRangeRoutingTable(RangeRoutingTable *pRRTable) {
+  RRTable = pRRTable;
+}
 
 void MbSharedState::SetAccessCostCalculator(AccessCostCalculator *pACCalculator) {
   ACCalculator = pACCalculator;
@@ -35,33 +42,44 @@ bool MbSharedState::WriteMbMsg(const LpId &pSender, const unsigned long pReceive
                                const AbstractValue *pValue) {
   //spdlog::debug("Total num of mbv: {}",MailboxVariableMap.size());
   SsvId dstId = MailboxAgentMap.find(pReceiverId)->second;
-  if (MailboxAgentMap.find(pReceiverId) == MailboxAgentMap.end()) {
-    spdlog::critical("MailboxAgentMap agent not found! {}", pReceiverId);
-    exit(1);
-  }
   MailboxVariable *dstMbv = MailboxVariableMap.find(dstId)->second;
-  if (MailboxVariableMap.find(dstId) == MailboxVariableMap.end()) {
-    spdlog::critical("MBV not found! {}", dstId.id());
-    exit(1);
-  }
+  assert(MailboxVariableMap.find(dstId) != MailboxVariableMap.end());
   // TODO see the variable in map
   //spdlog::debug("prepare to add msg to {0}", dstId.id());
   // bool rollback_flag = dstMbv->InsertMbMessageWithRollback(pValue, pTime, pSender);
   return dstMbv->InsertMbMessageWithRollback(pValue, pTime, pSender);
 
 }
+//    auto mbWriteMapIter = MbWriteMap.find(pSender);
+//
+//    if (mbWriteMapIter == MbWriteMap.end()) {
+//      std::ostringstream out;
+//      pValue->Serialise(out);
+//      spdlog::critical("Can't find agent in mbWriteMap: function call was: MbSharedState::WriteMbMsg(({},{}),{},{},{})",
+//                    pSender.GetId(), pSender.GetRank(), pReceiverId, pTime, out.str());
+//      exit(1);
+//    }
+//    for (auto recordIterator = mbWriteMapIter->second.begin();
+//         recordIterator != mbWriteMapIter->second.end(); recordIterator++) {
+//      if (get<0>(*recordIterator) > pTime) {
+//        mbWriteMapIter->second.insert(recordIterator, make_tuple(pTime, pReceiverId));
+//      }
+//      // mbWriteMapIter.emplace_back(pTime, pReceiver);
+//      // find the nearest log to pTime
+//    }
+// }
 
 
 void MbSharedState::Add(const SsvId &pSsvId, const unsigned long pAgentId) {
   if (ContainsVariable(pSsvId)) {
-    spdlog::critical("MbSharedState::Add({0},{1}): Already contains {2}", pSsvId.id(), pAgentId, pSsvId.id());
+    spdlog::critical("MbSharedState::Add({0},{1}): Already contains {0}", pSsvId.id(), pAgentId);
     exit(1);
   }
 
   MailboxVariableMap[pSsvId] = new MailboxVariable(pSsvId, pAgentId);
   MailboxAgentMap[pAgentId] = pSsvId;
 #ifdef SSV_LOCALISATION
-  spdlog::debug("MbSharedState::Add({0},{1})", pSsvId.id(), pAgentId);
+  spdlog::debug("MbSharedState::Add({},{})", pSsvId.id(), pAgentId);
   ACCalculator->InitialiseCounters(pSsvId);
 
 #endif
@@ -74,13 +92,6 @@ void MbSharedState::Insert(const SsvId &pSsvId, const MailboxVariable &pMbVariab
   }
   const unsigned long pAgentId = pMbVariable.GetOwnerAgentId();
   MailboxVariableMap[pSsvId] = new MailboxVariable(pSsvId, pAgentId);
-  for (auto i:MailboxVariableMap[pSsvId]->GetMessageList()) {
-    bool rb = MailboxVariableMap[pSsvId]->InsertMbMessageWithRollback(i.GetValueCopy(), i.GetTime(), i.GetSender());
-    rb_needed = rb_needed || rb;
-  }
-  // MailboxVariableMap[pSsvId] = new MailboxVariable(pMbVariable);
-
-  MailboxAgentMap[pAgentId] = pSsvId;
 #ifdef SSV_LOCALISATION
   ACCalculator->InitialiseCounters(pSsvId);
 
@@ -92,7 +103,6 @@ void MbSharedState::Delete(const SsvId &pSSVID) {
     LOG(logERROR) << "MbSharedState::Delete# Trying to delete a non-existant variable!";
     exit(1);
   }
-  MailboxAgentMap.erase(MailboxVariableMap[pSSVID]->GetOwnerAgentId());
   MailboxVariableMap.erase(pSSVID);
 #ifdef SSV_LOCALISATION
   ACCalculator->RemoveSsvAccessRecord(pSSVID);
@@ -107,9 +117,8 @@ MailboxVariable MbSharedState::GetCopy(const SsvId &pSSVID) {
     LOG(logERROR) << "MbSharedState::GetCopy# Trying to get a non-existant variable!";
     exit(1);
   }
-  auto to_copy = *(MailboxVariableMap.find(pSSVID)->second);
-
-  return MailboxVariable(to_copy);
+  auto to_copy = MailboxVariableMap.find(pSSVID)->second;
+  return MailboxVariable(*to_copy);
 }
 
 SerialisableList<MbMail> MbSharedState::Read(const unsigned long pOwnerId, unsigned long pTime) {
@@ -119,10 +128,10 @@ SerialisableList<MbMail> MbSharedState::Read(const unsigned long pOwnerId, unsig
 }
 
 void MbSharedState::RollbackRead(const unsigned long pOwnerId, unsigned long pTime) {
-  // rollbacks reads that shouldn't happen
+  // rollbacks reads that shouldnt happen
   SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
   MailboxVariable *mbv = MailboxVariableMap.find(mbvId)->second;
-  mbv->PerformReadAnti(pOwnerId, pTime);
+  mbv->PeformReadAnti(pOwnerId, pTime);
 }
 
 
@@ -143,11 +152,40 @@ MbSharedState::RollbackWrite(const unsigned long pOwnerId, const LpId &pSender, 
 
 }
 
-
+//void MbSharedState::RemoveMessageList(const SsvId &, RollbackList &) {}
+//
+//vector<tuple<unsigned long, LpId>> MbSharedState::GetMsgToRollback(const LpId &pAgent, unsigned long readUntil) {
+//   auto mbWriteMapIterator = MbWriteMap.find(pAgent);
+//   list<tuple<unsigned long, LpId>> result;
+//
+//   auto writeIterator = mbWriteMapIterator->second.begin();
+//   while (writeIterator != mbWriteMapIterator->second.end()) {
+//      if (get<0>(*writeIterator) > readUntil) {
+//         result.push_back(*writeIterator);
+//      }
+//      writeIterator++;
+//   }
+//}
 
 int MbSharedState::GetRankFromAgentId(unsigned long agentId) {
   return fAgentIdToRankMap[agentId];
 }
+
+//RollbackList MbSharedState::GetRollbacklist(const LpId &pOwner, unsigned long pTime) {
+//   RollbackList rollbackList;
+//   SsvId mbvId = MailboxAgentMap.find(pOwner)->second;
+//   MailboxVariable dstMbv = MailboxVariableMap.find(mbvId)->second;
+//   vector<pair<LpId, unsigned long>> RbRecordList;
+//   RbRecordList = dstMbv.GetRbList(pTime);
+//
+//   auto RecordListIterator = RbRecordList.begin();
+//   while (RecordListIterator != RbRecordList.end()) {
+//      rollbackList.AddLp(RecordListIterator->first, RecordListIterator->second);
+//      RecordListIterator++;
+//   }
+//
+//   return rollbackList;
+//}
 
 void MbSharedState::SetMailboxAgentMap(const map<unsigned long, SsvId> &maMap) {
   MailboxAgentMap = maMap;
@@ -164,23 +202,16 @@ void MbSharedState::SetAgentIdToRankMap(map<unsigned long, int> agentIdToRankMap
 }
 
 
-void MbSharedState::RemoveMessageList(const SsvId &pSSVID, bool &rb_needed, int &rb_ts) {
+void MbSharedState::RemoveMessageList(const SsvId &pSSVID, bool &rb_needed) {
   if (!ContainsVariable(pSSVID)) {
     LOG(logERROR) << "MbSharedState::RemoveMessageList# Trying to rmv msgList on non-existant variable!";
     exit(1);
   }
   auto mbvMapIter = MailboxVariableMap.find(pSSVID);
   auto msgList = mbvMapIter->second->GetMessageList();
-  auto msgListIter = msgList.rbegin();
-  while (msgListIter != msgList.rend()) {
-    bool rb = false;
-    int ts = msgListIter->GetTime() - 1;
-    mbvMapIter->second->PerformWriteAnti(msgListIter->GetSender(), msgListIter->GetTime(), rb);
-    if (rb && ts < rb_ts) {
-      rb_ts = ts;
-    }
-    rb_needed = rb_needed || rb;
-
+  auto msgListIter = msgList.begin();
+  while (msgListIter != msgList.end()) {
+    mbvMapIter->second->PerformWriteAnti(msgListIter->GetSender(), msgListIter->GetTime(), rb_needed);
     ++msgListIter;
   }
 }
@@ -188,8 +219,4 @@ void MbSharedState::RemoveMessageList(const SsvId &pSSVID, bool &rb_needed, int 
 
 unsigned long MbSharedState::GetOwnerId(const SsvId &pMbvId) {
   return MailboxVariableMap.find(pMbvId)->second->GetOwnerAgentId();
-}
-
-MbSharedState::MbSharedState() {
-
 }

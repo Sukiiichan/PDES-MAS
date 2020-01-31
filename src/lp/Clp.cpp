@@ -112,7 +112,7 @@ void Clp::SetGvt(unsigned long pGVT) {
   // Set GVT
   fGVT = pGVT;
   // Remove write periods before GVT
-  // spdlog::debug("Clp {0}, SetGvt({1}), remove write periods", GetRank(), fGVT);
+  spdlog::debug("Clp {}, SetGvt({}), remove write periods", GetRank(), fGVT);
   fSharedState.RemoveWritePeriods(fGVT);
   fMbSharedState.RemoveOldMessages(fGVT);
 #ifdef RANGE_QUERIES
@@ -133,11 +133,12 @@ void Clp::SetGvt(unsigned long pGVT) {
     // Restart load balancing
     fStopLoadBalanceProcessing = false;
     // If CLP load is sufficient
-    bool clpSsvLoad = fAccessCostCalculator->CheckClpload();
-    bool clpMbLoad = fMbAccessCostCalculator->CheckClpload();
-    if (clpSsvLoad || clpMbLoad) {
+    if (fAccessCostCalculator->CheckClpload()) {
       // Trigger state migration
-      MigrateStateVariables(fAccessCostCalculator->GetMigrationMap(), fMbAccessCostCalculator->GetMigrationMap());
+      MigrateStateVariables(fAccessCostCalculator->GetMigrationMap(), 0);
+    }
+    if(fMbAccessCostCalculator->CheckClpload()){
+      MigrateStateVariables(fMbAccessCostCalculator->GetMigrationMap(), 1);
     }
 #endif
   }
@@ -429,7 +430,7 @@ void Clp::Receive() {
           << "Clp::Receive(" << GetRank()
           << ")# RollbackMessage received for this CLP while CLPs don't handle response messages! "
           << *receivedMessage;
-        spdlog::error("Message is from {0} to {1}", rollbackMessage->GetOrigin(), rollbackMessage->GetDestination());
+        spdlog::error("Message is from {} to {}", rollbackMessage->GetOrigin(), rollbackMessage->GetDestination());
       } else rollbackMessage->SendToLp(this);
     }
       break;
@@ -552,30 +553,39 @@ void Clp::ProcessMessage(const MailboxReadMessage *pMailboxReadMessage) {
 
 void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
   const AbstractValue *value = pMailboxWriteMessage->GetValue();
-  unsigned long writeTime = pMailboxWriteMessage->GetTimestamp();
+  unsigned long time = pMailboxWriteMessage->GetTimestamp();
+  // const LpId &sender = pMailboxWriteMessage->GetOriginalAgent();
   const unsigned long mbOwnerId = pMailboxWriteMessage->GetMbOwnerId();
   WriteStatus writeStatus;
-  bool no_rollback = fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAgent(),
-                                               pMailboxWriteMessage->GetMbOwnerId(), writeTime, value);
-  writeStatus = writeSUCCESS;
-  if (!no_rollback) {
+  bool write_success = fMbSharedState.WriteMbMsg(pMailboxWriteMessage->GetOriginalAgent(),
+                                                 pMailboxWriteMessage->GetMbOwnerId(), time, value);
+  //RollbackList rollbackList = fMbSharedState.GetRollbacklist(receiver, time);
+  writeStatus = write_success ? writeSUCCESS : writeFAILURE;
+  if (!write_success) {
 
-    unsigned long rollbackTime = writeTime - 1;
+    // the receiver is rolled back
+    // see len(rblist) else RB
+    // Receiver Agent RB to ptime, send Anti-Read msg
+    // call sys to RB receiver, add sending of antimsgs to RB handling
+    //FIXME: Multiple MB message at same ts may cause duplicate RBTag
     RollbackMessage *rollbackMessage = new RollbackMessage();
-    spdlog::warn("rollback msg generating, to owner {0}, time {1}", pMailboxWriteMessage->GetMbOwnerId(), rollbackTime);
+    spdlog::warn("rollback msg generating, to owner {}, time {}", pMailboxWriteMessage->GetMbOwnerId(), time);
     rollbackMessage->SetOrigin(this->GetRank());
-    rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
+    // rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(mbOwnerId));
+    // spdlog::warn("fMbSharedState.GetRankFromAgentId({})={}", mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId));
+    rollbackMessage->SetDestination(fMbSharedState.GetRankFromAgentId(pMailboxWriteMessage->GetMbOwnerId()));
     // Rollback message timestamp is the time of the read to be rolled back
-    rollbackMessage->SetTimestamp(rollbackTime);
+    rollbackMessage->SetTimestamp(time);
+
     // Mattern colour set by GVT Calculator
-    RollbackTag rollbackTag(fMbSharedState.GetMbvId(mbOwnerId), rollbackTime, ROLLBACK_BY_MBWRITE);
+    RollbackTag rollbackTag(fMbSharedState.GetMbvId(mbOwnerId), time, ROLLBACK_BY_MBWRITE);
     rollbackMessage->SetRollbackTag(rollbackTag);
-    rollbackMessage->SetOriginalAgent(LpId(mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId)));
+    rollbackMessage->SetOriginalAgent(pMailboxWriteMessage->GetOriginalAgent());
     ostringstream out;
     rollbackMessage->Serialise(out);
     rollbackMessage->SendToLp(this);
 
-    spdlog::warn("rollback msg sending to ALP {0}, agent {1}, {2}", fMbSharedState.GetRankFromAgentId(mbOwnerId),
+    spdlog::warn("rollback msg sending to ALP {}, agent {}, {}", fMbSharedState.GetRankFromAgentId(mbOwnerId),
                  mbOwnerId, out.str());
   }
   auto *mbWriteResponseMsg = new MbWriteResponseMsg();
@@ -598,15 +608,13 @@ void Clp::ProcessMessage(const MailboxWriteMessage *pMailboxWriteMessage) {
 
 void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
   if (fGVT > pMbAntiReadMsg->GetTimestamp()) {
-
+    LOG(logERROR) << "";
     return;
   }
-  spdlog::debug("MBV {} read rollback to {}", pMbAntiReadMsg->GetOriginalAgent().GetId(),
-                pMbAntiReadMsg->GetTimestamp() - 1);
   // RollbackList rollbackList = fMbSharedState.GetRollbacklist(pMbAntiReadMsg->GetOriginalAgent(),pMbAntiReadMsg->GetTimestamp());
   // FIXME: Mail should have a unique id to handle anti operation
   // could use w
-  fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp() - 1);
+  fMbSharedState.RollbackRead(pMbAntiReadMsg->GetOriginalAgent().GetId(), pMbAntiReadMsg->GetTimestamp());
   // rollbackList.SendRollbacks(this, pMbAntiReadMsg->GetRollbackTag());
 
   fMbSharedState.UpdateAccessCount(fMbSharedState.GetMbvId(pMbAntiReadMsg->GetOriginalAgent().GetId()),
@@ -617,11 +625,11 @@ void Clp::ProcessMessage(const MbReadAntiMsg *pMbAntiReadMsg) {
 void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
   unsigned long mbOwnerId = pMbAntiWriteMsg->GetMbOwnerId();
   if (fGVT > pMbAntiWriteMsg->GetTimestamp()) {
-    spdlog::critical("Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) message timestamp {0} < GVT {1}",
+    spdlog::critical("Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) message timestamp {} < GVT {}",
                      pMbAntiWriteMsg->GetTimestamp(), fGVT);
     exit(1);
   }
-  // RollbackList rollbackList;`
+  // RollbackList rollbackList;
   // unsigned long rb_time = -1;
   bool rb_needed = false;
   fMbSharedState.RollbackWrite(pMbAntiWriteMsg->GetMbOwnerId(), pMbAntiWriteMsg->GetOriginalAgent(),
@@ -635,9 +643,8 @@ void Clp::ProcessMessage(const MbWriteAntiMsg *pMbAntiWriteMsg) {
         fMbSharedState.GetRankFromAgentId(mbOwnerId)); // the receiver mb's owner, not the sender
     RollbackTag rollbackTag(fMbSharedState.GetMbvId(mbOwnerId), pMbAntiWriteMsg->GetTimestamp(), ROLLBACK_BY_MBWRITE);
     rollbackMessage->SetRollbackTag(rollbackTag);
-    rollbackMessage->SetTimestamp(pMbAntiWriteMsg->GetTimestamp() - 1);
-
-    rollbackMessage->SetOriginalAgent(LpId(mbOwnerId, fMbSharedState.GetRankFromAgentId(mbOwnerId)));
+    rollbackMessage->SetTimestamp(pMbAntiWriteMsg->GetTimestamp());
+    rollbackMessage->SetOriginalAgent(pMbAntiWriteMsg->GetOriginalAgent());
     rollbackMessage->SendToLp(this);
   }
 #ifdef SSV_LOCALISATION
@@ -866,7 +873,6 @@ void Clp::ProcessMessage(const StateMigrationMessage *pStateMigrationMessage) {
 
   SerialisableMap<SsvId, MailboxVariable> mbStateVariableMap = pStateMigrationMessage->GetMbStateVariableMap();
   auto mbStateVariableMapIterator = mbStateVariableMap.begin();
-  spdlog::debug("StateMigrationMessage received, SSV {}, MB {}", stateVariableMap.size(), mbStateVariableMap.size());
 
 
   // For each state variable in the map
@@ -892,135 +898,130 @@ void Clp::ProcessMessage(const StateMigrationMessage *pStateMigrationMessage) {
 
   while (mbStateVariableMapIterator != mbStateVariableMap.end()) {
     // Set the direction of the incoming SSV to the current CLP
-    fRouter->SetMbSsvIdDirection(mbStateVariableMapIterator->first, (Direction) HERE);
+    fRouter->SetSsvIdDirection(mbStateVariableMapIterator->first, (Direction) HERE);
     // Insert the state variable
     // TODO rmv rblist
     // RollbackList rollbackList;
     bool rb_needed = false;
-    spdlog::debug("smrc prepare insert copy of mbv");
     fMbSharedState.Insert(mbStateVariableMapIterator->first, mbStateVariableMapIterator->second, rb_needed);
-    // TODO add mails to new mbv
+    // Send rollbacks if necessary
+    if (rb_needed) {
+      RollbackTag rbTag(mbStateVariableMapIterator->first, ULONG_MAX, ROLLBACK_BY_SM);
+      // TODO generate rb msg and send
+      // rollbackList.SendRollbacks(this, rbTag);
+    }
+#ifdef RANGE_QUERIES
+    // Send range updates
+    SendRangeUpdates(fRangeRoutingTable[HERE]->GetRangeUpdateList(), HERE);
+    fRangeRoutingTable[HERE]->ClearRangeUpdates();
+#endif
     // Move on to the next SSV
-    spdlog::debug("smrc mbv inserted");
     ++mbStateVariableMapIterator;
   }
 }
 
-void Clp::MigrateStateVariables(const map<Direction, list<SsvId> > &pSsvMigrationMap,
-                                const map<Direction, list<SsvId> > &pMbMigrationMap) {
-  spdlog::debug("SV Migration!");
-  int sm_count = 0;
-  for (auto &i : pSsvMigrationMap) {
+void Clp::MigrateStateVariables(const map<Direction, list<SsvId> > &pMigrationMap, unsigned int typeFlag) {
+  spdlog::warn("SV Migration!");
+  for (auto &i : pMigrationMap) {
     for (auto &i2:i.second) {
-      spdlog::debug("SSV: {0}, to {1}", i2.id(), i.first);
+      spdlog::warn("{0}, to {1}", i2.id(), i.first);
     }
   }
-  for (auto &i : pMbMigrationMap) {
-    for (auto &i2:i.second) {
-      spdlog::debug("MB: {0}, to {1}", i2.id(), i.first);
-    }
-  }
-  // For SSV
   // Get the list of SSVs to migrate to which port
-  auto migrateSSVMapIterator = pSsvMigrationMap.begin();
+  map<Direction, list<SsvId> >::const_iterator migrateSSVMapIterator = pMigrationMap.begin();
 
   // For each direction in the list
-
-  while (migrateSSVMapIterator != pSsvMigrationMap.end()) {
-    // Create a new load balancing load message
-    auto loadBalancingLoadMessage = new StateMigrationMessage();
-    loadBalancingLoadMessage->SetOrigin(GetRank());
-    loadBalancingLoadMessage->SetDestination(fRouter->GetLpRankByDirection(migrateSSVMapIterator->first));
+  if(typeFlag == 0){
+    while (migrateSSVMapIterator != pMigrationMap.end()) {
+      // Create a new load balancing load message
+      StateMigrationMessage *loadBalancingLoadMessage = new StateMigrationMessage();
+      loadBalancingLoadMessage->SetOrigin(GetRank());
+      loadBalancingLoadMessage->SetDestination(fRouter->GetLpRankByDirection(migrateSSVMapIterator->first));
 #ifdef RANGE_QUERIES
-    // Clear the range updates in the routing table
-    fRangeRoutingTable[HERE]->ClearRangeUpdates();
-#endif
-    // For each SSV in the list
-    auto ssvIdListIterator = (migrateSSVMapIterator->second).begin();
-    while (ssvIdListIterator != (migrateSSVMapIterator->second).end()) {
-      // Set the state variable in the load balancing load message
-      loadBalancingLoadMessage->SetStateVariableMap(*ssvIdListIterator, fSharedState.GetCopy(*ssvIdListIterator));
-      // Update the direction for this SSV
-      fRouter->SetSsvIdDirection(*ssvIdListIterator, migrateSSVMapIterator->first);
-      // Remove all write periods
-      RollbackList rollbackList;
-      fSharedState.RemoveWritePeriodList(*ssvIdListIterator, rollbackList);
-      // Delete the SSV from the shared state
-      fSharedState.Delete(*ssvIdListIterator);
-      // Send rollbacks if necessary
-      if (rollbackList.GetSize() > 0) {
-        RollbackTag rbTag(*ssvIdListIterator, ULONG_MAX, ROLLBACK_BY_SM);
-        LOG(logFINEST) << "Sending rollbacks after state migration";
-        rollbackList.SendRollbacksAfterStateMigration(this, rbTag);
-      }
-#ifdef RANGE_QUERIES
-      // Send range updates
-      SendRangeUpdates(fRangeRoutingTable[HERE]->GetRangeUpdateList(), HERE);
+      // Clear the range updates in the routing table
       fRangeRoutingTable[HERE]->ClearRangeUpdates();
 #endif
-      // Move on to next SSV for this direction
-      ++ssvIdListIterator;
-    }
-    // Send load balancing load message
-    loadBalancingLoadMessage->SendToLp(this);
-    // Move on to next direction
-    ++migrateSSVMapIterator;
-  }
-  // End of SSV
-  return;
-  // For MB
-  // Get the list of SSVs to migrate to which port
-  auto migrateMbMapIterator = pMbMigrationMap.begin();
-
-  // For each direction in the list
-
-  while (migrateMbMapIterator != pMbMigrationMap.end()) {
-    // Create a new load balancing load message
-    auto loadBalancingLoadMessage = new StateMigrationMessage();
-    loadBalancingLoadMessage->SetOrigin(GetRank());
-    loadBalancingLoadMessage->SetDestination(fRouter->GetLpRankByDirection(migrateMbMapIterator->first));
-    // For each SSV in the list
-    auto ssvIdListIterator = (migrateMbMapIterator->second).begin();
-    while (ssvIdListIterator != (migrateMbMapIterator->second).end()) {
-      unsigned long owner_id = fMbSharedState.GetOwnerId(*ssvIdListIterator);
-      int owner_rank = fMbSharedState.GetRankFromAgentId(owner_id);
-      // Set the MBV in the load balancing load message
-      auto mbvCopy = fMbSharedState.GetCopy(*ssvIdListIterator);
-      // Update the direction for this SSV
-      fRouter->SetMbSsvIdDirection(*ssvIdListIterator, migrateMbMapIterator->first);
-      // Remove MBV
-      bool rb_needed = false;
-      int rb_ts = 0;
-      fMbSharedState.RemoveMessageList(*ssvIdListIterator, rb_needed, rb_ts);
-
-      loadBalancingLoadMessage->SetMbStateVariableMap(*ssvIdListIterator, fMbSharedState.GetCopy(*ssvIdListIterator));
-
-      fMbSharedState.Delete(*ssvIdListIterator);
-      if (rb_needed) {
-        RollbackMessage *rollbackMessage = new RollbackMessage();
-        rollbackMessage->SetOrigin(this->GetRank());
-        rollbackMessage->SetDestination(owner_rank);
-        // Rollback message timestamp is the time of the read to be rolled back
-        rollbackMessage->SetTimestamp(rb_ts);
-        // Mattern colour set by GVT Calculator
-        RollbackTag rbTag(*ssvIdListIterator, rb_ts, ROLLBACK_BY_SM);
-        rollbackMessage->SetRollbackTag(rbTag);
-        rollbackMessage->SetOriginalAgent(LpId(owner_id, owner_rank));
-        rollbackMessage->SendToLp(this);
+      // For each SSV in the list
+      list<SsvId>::const_iterator ssvIdListIterator = (migrateSSVMapIterator->second).begin();
+      while (ssvIdListIterator != (migrateSSVMapIterator->second).end()) {
+        // Set the state variable in the load balancing load message
+        loadBalancingLoadMessage->SetStateVariableMap(*ssvIdListIterator, fSharedState.GetCopy(*ssvIdListIterator));
+        // Update the direction for this SSV
+        fRouter->SetSsvIdDirection(*ssvIdListIterator, migrateSSVMapIterator->first);
+        // Remove all write periods
+        RollbackList rollbackList;
+        fSharedState.RemoveWritePeriodList(*ssvIdListIterator, rollbackList);
+        // Delete the SSV from the shared state
+        fSharedState.Delete(*ssvIdListIterator);
+        // Send rollbacks if necessary
+        if (rollbackList.GetSize() > 0) {
+          RollbackTag rbTag(*ssvIdListIterator, ULONG_MAX, ROLLBACK_BY_SM);
+          LOG(logFINEST) << "Sending rollbacks after state migration";
+          rollbackList.SendRollbacksAfterStateMigration(this, rbTag);
+        }
+#ifdef RANGE_QUERIES
+        // Send range updates
+        SendRangeUpdates(fRangeRoutingTable[HERE]->GetRangeUpdateList(), HERE);
+        fRangeRoutingTable[HERE]->ClearRangeUpdates();
+#endif
+        // Move on to next SSV for this direction
+        ++ssvIdListIterator;
       }
-      // Move on to next SSV for this direction
-      ++ssvIdListIterator;
-      sm_count += 1;
+      // Send load balancing load message
+      loadBalancingLoadMessage->SendToLp(this);
+      // Move on to next direction
+      ++migrateSSVMapIterator;
     }
-    // Send load balancing load message
-    ostringstream out;
-    loadBalancingLoadMessage->Serialise(out);
-    loadBalancingLoadMessage->SendToLp(this);
-    // Move on to next direction
-    ++migrateMbMapIterator;
+  }else if(typeFlag == 1){
+//    while (migrateSSVMapIterator != pMigrationMap.end()) {
+//      // Create a new load balancing load message
+//      StateMigrationMessage *loadBalancingLoadMessage = new StateMigrationMessage();
+//      loadBalancingLoadMessage->SetOrigin(GetRank());
+//      loadBalancingLoadMessage->SetDestination(fRouter->GetLpRankByDirection(migrateSSVMapIterator->first));
+//#ifdef RANGE_QUERIES
+//      // Clear the range updates in the routing table
+//      fRangeRoutingTable[HERE]->ClearRangeUpdates();
+//#endif
+//      // For each SSV in the list
+//      list<SsvId>::const_iterator ssvIdListIterator = (migrateSSVMapIterator->second).begin();
+//      while (ssvIdListIterator != (migrateSSVMapIterator->second).end()) {
+//        loadBalancingLoadMessage->SetMbStateVariableMap(*ssvIdListIterator, fMbSharedState.GetCopy(*ssvIdListIterator));
+//        fRouter->SetSsvIdDirection(*ssvIdListIterator, migrateSSVMapIterator->first);
+//        bool rb_needed = false;
+//        auto ownerId = fMbSharedState.GetOwnerId(*ssvIdListIterator);
+//        // TODO get list to RB
+//        fMbSharedState.RemoveMessageList(*ssvIdListIterator, rb_needed);
+//        fMbSharedState.Delete(*ssvIdListIterator);
+//        if (rb_needed) {
+//          RollbackTag rbTag(*ssvIdListIterator, ULONG_MAX, ROLLBACK_BY_SM);
+//          LOG(logFINEST) << "Sending rollbacks after state migration";
+//          spdlog::debug("rollback triggered in state migration");
+//          auto *rollbackMessage = new RollbackMessage();
+//          rollbackMessage->SetOrigin(this->GetRank());
+//
+//          rollbackMessage->SetDestination(
+//              fMbSharedState.GetRankFromAgentId(ownerId)); // the receiver mb's owner, not the sender
+//              // TODO fix time and original agent
+//          RollbackTag rollbackTag(*ssvIdListIterator, ULONG_MAX, ROLLBACK_BY_MBWRITE);
+//          rollbackMessage->SetRollbackTag(rollbackTag);
+//          rollbackMessage->SetTimestamp();
+//          rollbackMessage->SetOriginalAgent();
+//          rollbackMessage->SendToLp(this);
+//        }
+//#ifdef RANGE_QUERIES
+//        // Send range updates
+//        SendRangeUpdates(fRangeRoutingTable[HERE]->GetRangeUpdateList(), HERE);
+//        fRangeRoutingTable[HERE]->ClearRangeUpdates();
+//#endif
+//        // Move on to next SSV for this direction
+//        ++ssvIdListIterator;
+//      }
+//      // Send load balancing load message
+//      loadBalancingLoadMessage->SendToLp(this);
+//      // Move on to next direction
+//      ++migrateSSVMapIterator;
+//    }
   }
-  spdlog::warn("LOGSM {}", sm_count);
-
 
 }
 

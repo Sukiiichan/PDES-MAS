@@ -134,9 +134,7 @@ unsigned int RouteTable::GetRankFromDirection(const Direction pDirection) const 
 void RouteTable::SetSsvIdHost(SsvId pSSVID, Direction pDirection) {
   fSSVIDToDirectionMap[pSSVID] = pDirection;
 }
-void RouteTable::SetMbSsvIdHost(SsvId pSSVID, Direction pDirection) {
-  fMbIdToDirectionMap[pSSVID.id()] = pDirection;
-}
+
 Direction RouteTable::GetDirectionFromMbOwnerId(const unsigned long pOwnerId) const {
    //SsvId mbvId = MailboxAgentMap.find(pOwnerId)->second;
 //  SsvId mbvId = SsvId(pOwnerId);

@@ -25,7 +25,6 @@ namespace pdesmas {
   inline Direction operator++(Direction &c, int) {
     assert(c != DIRECTION_SIZE);
     ++c;
-    
     return static_cast<Direction>(c - 1);
   }
 #endif

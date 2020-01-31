@@ -2,17 +2,18 @@
 <project version="4">
   <component name="PublishConfigData" autoUpload="Always" serverName="Remote Host (54b5c7cc-cbea-4bb7-b543-16f4c588903f)">
     <serverData>
-      <paths name="Remote Host (54b5c7cc-cbea-4bb7-b543-16f4c588903f)">
+      <paths name="asialab-01 (54b5c7cc-cbea-4bb7-b543-16f4c588903f)">
         <serverdata>
           <mappings>
-            <mapping deploy="/tmp/tmp.d9yf4DKTwr" local="$PROJECT_DIR$" />
+            <mapping deploy="/tmp/tmp.ULHqGOrrbY" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-release" />
           </excludedPaths>
         </serverdata>
       </paths>
-      <paths name="WSL (433e044e-ac75-43d8-a183-10bddeb72eeb)">
+      <paths name="login node (3041d9f6-ab58-4603-8a2c-d865b43f72ca)">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />

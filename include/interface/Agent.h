@@ -49,7 +49,7 @@ namespace pdesmas {
 
     Alp *attached_alp_ = nullptr;
     LpId agent_identifier_;
-    bool message_ready_;
+    Semaphore message_waiting_sem_;
     unsigned long start_time_;
     unsigned long end_time_;
     unsigned long agent_id_;
@@ -133,9 +133,9 @@ namespace pdesmas {
     // this could be overridden to do some collection
     virtual void Finalise();
 
-    void SetMessageArriveFlag();
+    void NotifyMessageArrive();
 
-    void ResetMessageArriveFlag();
+    void ResetMessageArriveSemaphore();
   };
 }
 

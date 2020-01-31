@@ -1,3 +1,4 @@
+#include <spdlog/spdlog.h>
 #include "MailboxVariable.h"
 
 using namespace pdesmas;
@@ -10,7 +11,7 @@ MailboxVariable::MailboxVariable(const SsvId &pSsvId, const unsigned long pAgent
   ownerAgentId = pAgentId;
   messageList = SerialisableList<MbMail>();
   //ownerAgent = pAgent;
-  //spdlog::warn("Constructor of MBV called");
+  spdlog::warn("Constructor of MBV called");
 }
 
 MailboxVariable::MailboxVariable(const MailboxVariable &pMbVariable) {
@@ -19,6 +20,8 @@ MailboxVariable::MailboxVariable(const MailboxVariable &pMbVariable) {
   readUntil = pMbVariable.readUntil;
   messageList = pMbVariable.messageList;
   ownerAgentId = pMbVariable.ownerAgentId;
+  spdlog::warn("Copy constructor of MBV called");
+
 }
 
 MailboxVariable::~MailboxVariable() {}
@@ -42,25 +45,53 @@ const SerialisableList<MbMail> &MailboxVariable::GetMessageList() const {
 
 // AddMsgList
 
-void MailboxVariable::PerformReadAnti(const unsigned long pOwnerId, unsigned long pTime) {
-
+void MailboxVariable::PeformReadAnti(const unsigned long pOwnerId, unsigned long pTime) {
+//  if (pTime >= readUntil) {
+//    spdlog::critical("MailboxVariable::PeformReadAnti(): pTime >= readUntil");
+//    exit(1);
+//  }
   if (pOwnerId != ownerAgentId) {
-    spdlog::critical("MailboxVariable::PeformReadAnti(): pOwnerId({0}) != ownerAgentId({1})", pOwnerId, ownerAgentId);
+    spdlog::critical("MailboxVariable::PeformReadAnti(): pOwnerId({}) != ownerAgentId({})", pOwnerId, ownerAgentId);
     exit(1);
   }
-
-  if (readUntil > pTime) {
-    spdlog::debug("Agent {} readUntil rollback to {}", pOwnerId, pTime);
-    readUntil = pTime;
-  }
+//   auto MbvIterator = messageList.begin();
+//   while(MbvIterator != messageList.end()){
+//      if(MbvIterator->GetTime()>=pTime){
+//         // ? may no need to perform actions
+//      } else{
+//         MbvIterator++;
+//      }
+//   }
+//  auto mbMessageIterator = messageList.begin();
+//  while (mbMessageIterator->GetTime() < readUntil) {
+//    if (mbMessageIterator->GetTime() >= pTime) {
+//      break;
+//    }
+//    mbMessageIterator++;
+//  }
+//  mbMessageIterator--;
+//  spdlog::error("Resetting readUntil to {}, should be {}", mbMessageIterator->GetTime(), pTime);
+//  readUntil = mbMessageIterator->GetTime();
+  if (readUntil > pTime) { readUntil = pTime; }
 }
 
 void MailboxVariable::PerformWriteAnti(const LpId &pSender, unsigned long pTime, bool &rb_needed) {
-  spdlog::debug("MailboxVariable::PerformWriteAnti: Agent {0} retracting message sent to {1} at {2}", pSender.GetId(),
+  spdlog::debug("MailboxVariable::PerformWriteAnti: Agent {} retracting message sent to {} at {}", pSender.GetId(),
                 ownerAgentId, pTime);
   RemoveMbMessage(pSender, pTime);
-
-  rb_needed = pTime <= readUntil;
+  if (pTime <= readUntil) {
+    // TODO call RB, get RB timestamp
+    rb_needed = true;
+//    auto mbMessageIterator = messageList.begin();
+//    while(mbMessageIterator->GetTime()<readUntil){
+//      mbMessageIterator ++;
+//    }
+//    mbMessageIterator --;
+//    rb_time = mbMessageIterator->GetTime();
+    // pRollbackList.AddLp(this->ownerAgent, pTime);
+  } else {
+    rb_needed = false;
+  }
 }
 
 void MailboxVariable::AddMessageToMessageList(const MbMail &mail) {
@@ -71,8 +102,7 @@ void MailboxVariable::AddMessageToMessageList(const MbMail &mail) {
   for (auto i = messageList.begin(); i != messageList.end(); i++) {
     if (i->GetTime() >= mail.GetTime()) {
       messageList.insert(i, mail);
-      spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->mbVariableID.id(), mail.GetTime(), messageList.size() * 40);
-      // spdlog::debug("agent {0}, number of entries {1} at time {2}", ownerAgentId, messageList.size(),mail.GetTime());
+      spdlog::debug("agent {0}, number of entries {1} at time {2}", ownerAgentId, messageList.size(),mail.GetTime());
       return;
     }
   }
@@ -82,50 +112,116 @@ void MailboxVariable::AddMessageToMessageList(const MbMail &mail) {
 
 bool
 MailboxVariable::InsertMbMessageWithRollback(const AbstractValue *pValue, unsigned long pTime, const LpId &pSender) {
-
+  int p = 0;
+  for (auto i :messageList) {
+    assert(i.GetTime() >= p);
+    p = i.GetTime();
+  }
   auto newMsg = MbMail(pTime, pValue, pSender);
   this->AddMessageToMessageList(newMsg);
-  bool rb_needed = pTime <= readUntil;
-  if (rb_needed) {
-    spdlog::debug("Rollback caused by write in MBV {0}, readuntil {1}, time {2}", this->mbVariableID.id(), readUntil,
+  if (pTime <= readUntil) {
+    spdlog::debug("Rollback caused by write in MBV {}, readuntil {}, time {}", this->mbVariableID.id(), readUntil,
                   pTime);
-    this->PerformReadAnti(this->ownerAgentId, pTime - 1);
   }
-  spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->mbVariableID.id(), pTime, messageList.size() * 40);
-  return !rb_needed;
+  return pTime > readUntil;
+//  if (pTime >= readUntil) {
+//    auto mbMessageIterator = messageList.begin();
+//    auto newMsg = MbMail(pTime, pValue, pSender);
+//    if (messageList.end()->GetTime() <= pTime) {
+//      spdlog::debug("addmbmsg push mail{0} after {1}", pTime, messageList.end()->GetTime());
+//      messageList.emplace_back(std::move(newMsg));
+//    } else {
+//      while (mbMessageIterator != messageList.end()) {
+//        if (mbMessageIterator->GetTime() > pTime) {
+//          messageList.insert(mbMessageIterator, std::move(newMsg));
+//          spdlog::debug("addmbmsg insert{0} before {1}", pTime, mbMessageIterator->GetTime());
+//          // adding of write records done in MbSS
+//          break;
+//        }
+//        mbMessageIterator++;
+//      }
+//    }
+//    return true;
+//  } else {
+  // RB mailbox owner to pTime
+//    auto mlIter = messageList.begin();
+//    auto newMsg = MbMail(pTime, pValue, pSender);
+//    while (mlIter->GetTime() <= readUntil) {
+//      if (mlIter->GetTime() > pTime) {
+//        messageList.insert(mlIter, newMsg);
+//        mlIter--;
+//        //FIXME: CHECK
+//        if (readUntil > mlIter->GetTime()) {
+//          readUntil = mlIter->GetTime();
+//          spdlog::debug("Rollback caused by mb write, agent {}, readUntil set to {}", this->ownerAgentId,
+//                        mlIter->GetTime());
+//        }
+//
+//        // TODO may move to anti-read processing
+//        //readUntil = 1 msg before pTime
+//        break;
+//      }
+//      ++mlIter;
+//    }
+//    return false;
+//  }
 }
 
 bool MailboxVariable::RemoveMbMessage(const LpId &pSender, unsigned long pTime) {
-  spdlog::debug("MailboxVariable::RemoveMbMessage: Remove message sent at {0}, agent {1}", pTime, ownerAgentId);
-  auto mbMessageIterator = messageList.begin();
-  bool no_rollback = pTime > readUntil;
+  spdlog::debug("MailboxVariable::RemoveMbMessage: Remove message sent at {}, agent {}", pTime, ownerAgentId);
+  SerialisableList<MbMail>::iterator mbMessageIterator = messageList.begin();
   while (mbMessageIterator != messageList.end()) {
     if (mbMessageIterator->GetTime() == pTime) {
-      if (mbMessageIterator->GetSender() == pSender) {
-        messageList.erase(mbMessageIterator);
-        break;
+      if (pTime < readUntil) {
+        return false;
+      } else if (mbMessageIterator->GetSender() != pSender) {
+        ++mbMessageIterator;
       }
-    }
-    ++mbMessageIterator;
-  }
-  spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->mbVariableID.id(), pTime, messageList.size() * 40);
+      //FIXME: Rewrite this to avoid removing end()
+      if (mbMessageIterator != messageList.end()) {
+        mbMessageIterator = messageList.erase(mbMessageIterator);
 
-  return no_rollback;
+      }
+      break;
+    } else if (mbMessageIterator->GetTime() < pTime) {
+      ++mbMessageIterator;
+    } else {
+      break;
+    }
+  }
+
+  return true;
 }
 
 void MailboxVariable::RemoveOldMessage(unsigned long pTime) {
   // delete read message received before pTime to save memory space
-  // spdlog::debug("MailboxVariable::RemoveOldMessage# Remove message sent at {0}, MBV {1}", pTime, mbVariableID.id());
-
+  spdlog::debug("MailboxVariable::RemoveOldMessage# Remove message sent at {}, MBV {}", pTime, mbVariableID.id());
   if (pTime >= messageList.begin()->GetTime() && pTime < readUntil) {
     auto mbMessageIterator = messageList.begin();
     while (mbMessageIterator->GetTime() <= pTime) {
       ++mbMessageIterator;
     }
     messageList.erase(messageList.begin(), mbMessageIterator);
-    spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->mbVariableID.id(), pTime, messageList.size() * 40);
+
   }
 }
+
+//vector<pair<LpId, unsigned long>> MailboxVariable::GetRbList(unsigned long pTime) {
+//   vector<pair<LpId, unsigned long>> result;
+//   if(pTime >= readUntil){
+//      LOG(logERROR) << "no need to perform rollback";
+//      exit(0);
+//   }
+//   auto mbMessageIterator = messageList.begin();
+//   while(mbMessageIterator->GetTime()!=readUntil){
+//      if(mbMessageIterator->GetTime()<pTime){
+//         mbMessageIterator ++;
+//      } else{
+//         result.emplace_back(mbMessageIterator->GetSender(),mbMessageIterator->GetTime());
+//      }
+//   }
+//   return result;
+//}
 
 SerialisableList<MbMail> MailboxVariable::ReadMb(const unsigned long reqAgentId, unsigned long reqTime) {
   SerialisableList<MbMail> mailList;
@@ -135,7 +231,7 @@ SerialisableList<MbMail> MailboxVariable::ReadMb(const unsigned long reqAgentId,
     if (reqTime > readUntil) {
       auto mbMessageIterator = messageList.begin();
       while (mbMessageIterator != messageList.end()) {
-        if (mbMessageIterator->GetTime() >= reqTime) {
+        if (mbMessageIterator->GetTime() > reqTime) {
 //               MbMail temp;
 //               temp.SetTime(mbMessageIterator->GetTime());
 //               temp.SetSender(mbMessageIterator->GetSender());
@@ -146,17 +242,16 @@ SerialisableList<MbMail> MailboxVariable::ReadMb(const unsigned long reqAgentId,
       }
 
       readUntil = reqTime;
-      spdlog::debug("MailboxVariable::ReadMb: Agent {0} read mailbox, set readUntil to {1} ", ownerAgentId, readUntil);
+      spdlog::debug("MailboxVariable::ReadMb: Agent {} read mailbox, set readUntil to {} ", ownerAgentId, readUntil);
 
       return mailList;
     } else {
-      spdlog::critical("MailboxVariable::ReadMb: Read request at t={0} is not later than readUntil({1}), agent {2}",
-                       reqTime,
+      spdlog::critical("MailboxVariable::ReadMb: Read request at t={} is earlier than readUntil({}), agent {}", reqTime,
                        readUntil, ownerAgentId);
       exit(1);
     }
   }
-  spdlog::critical("MailboxVariable::ReadMb: Agent {0} not allowed to read mailbox of {1}", reqAgentId, ownerAgentId);
+  spdlog::critical("MailboxVariable::ReadMb: Agent {} not allowed to read mailbox of {}", reqAgentId, ownerAgentId);
   exit(1);
 
 

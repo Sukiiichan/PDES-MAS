@@ -43,11 +43,11 @@ namespace pdesmas {
 
         void RemoveOldMessage(unsigned long);
 
-        void PerformReadAnti(const unsigned long pOwnerId, unsigned long pTime);
+        void PeformReadAnti(const unsigned long pOwnerId, unsigned long pTime);
 
         void PerformWriteAnti(const LpId &pSender, unsigned long pTime, bool &rb_needed);
 
-        //vector<pair<LpId, unsigned long>> GetRbList(unsigned long);
+        vector<pair<LpId, unsigned long>> GetRbList(unsigned long);
 
         SerialisableList<MbMail> ReadMb(const unsigned long reqAgentId, unsigned long reqTime);
 

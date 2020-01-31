@@ -83,8 +83,7 @@ namespace pdesmas {
 
       unsigned int GetLpRankByDirection(Direction) const;
       Direction GetDirectionByLpRank(unsigned int) const;
-    void SetSsvIdDirection(SsvId, Direction);
-    void SetMbSsvIdDirection(SsvId, Direction);
+      void SetSsvIdDirection(SsvId, Direction);
 
   };
 }

@@ -2,9 +2,9 @@
 // Created by pill on 19-4-23.
 //
 
-#include "Initialisor.h"
+#include <parse/Initialisor.h>
 #include "Simulation.h"
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 void Simulation::InitMPI() {
   int flag;
@@ -16,7 +16,7 @@ void Simulation::InitMPI() {
   }
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size_);
   MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank_);
-  spdlog::debug("Process rank {0}, pid {1}", comm_rank_, getpid());
+  spdlog::debug("Process rank {}, pid {}", comm_rank_, getpid());
 }
 
 void Simulation::Construct(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time) {
@@ -90,10 +90,10 @@ void Simulation::Run() {
 
     for (auto a:alp_to_agent_list_map_[this->rank()]) {
       this->alp_->AddAgent(a);
-      spdlog::debug("ALP {0} adding agent {1}", this->rank(), a->agent_id());
+      spdlog::debug("ALP {} adding agent {}", this->rank(), a->agent_id());
     }
 
-    spdlog::info("ALP {0}, {1} agents attached", this->rank(), this->alp_->GetNumOfAttachedAgents());
+    spdlog::info("ALP {}, {} agents attached", this->rank(), this->alp_->GetNumOfAttachedAgents());
 
     this->alp_->StartAllAgents();
     spdlog::debug("All agents started");

@@ -26,20 +26,18 @@ Agent::Agent(unsigned long const start_time, unsigned long const end_time, unsig
 
 
 void Agent::Body() {
+
   //spdlog::debug("Agent thread is up");
 
   while (GetLVT() < end_time_) {
-    spdlog::debug("Cycle begin");
     Cycle();
   }
   spdlog::debug("Agent {0} exit, LVT {1}, GVT {2}", this->agent_id(), this->GetLVT(), this->GetGVT());
   spdlog::debug("LVT >= EndTime, agent exit, id={0}", this->agent_id());
+  SendGVTMessage(); // Initiate GVT calculation to get ready for termination
+
   while (this->GetGVT() < end_time_) {
-    if (this->attached_alp_->GetCancelFlag(this->agent_id())) {
-      return;
-    }
-    sleep(1);
-    SendGVTMessage(); // Initiate GVT calculation to get ready for termination
+    usleep(1000);
     spdlog::info("Agent {} finsihed, GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(), this->GetLVT(),
                  this->GetAlpLVT());
   }
@@ -64,7 +62,7 @@ const SingleReadResponseMessage *Agent::SendReadMessageAndGetResponse(unsigned l
   WaitUntilMessageArrive();
   const AbstractMessage *ret = attached_alp_->GetResponseMessage(agent_identifier_.GetId());
   if (ret->GetType() != SINGLEREADRESPONSEMESSAGE) {
-    spdlog::error("Expecting SINGLEREADRESPONSEMESSAGE, get {0}", ret->GetType());
+    spdlog::error("Expecting SINGLEREADRESPONSEMESSAGE, get {}", ret->GetType());
     exit(1);
   }
   //spdlog::debug("Message get, agent {0}",agent_id_);
@@ -129,6 +127,7 @@ const MbWriteResponseMsg *Agent::SendMbWriteMessageAndGetResponse(unsigned long 
   mbWriteMsg->SetNumberOfHops(0);
   mbWriteMsg->SetIdentifier(attached_alp_->GetNewMessageId());
   mbWriteMsg->SetOriginalAgent(agent_identifier_);
+  // TODO modify OriginalALP->Agent
   mbWriteMsg->SetValue(value);
 
   mbWriteMsg->SendToLp(attached_alp_);
@@ -170,13 +169,22 @@ void Agent::SendGVTMessage() {
 
 
 void Agent::WaitUntilMessageArrive() {
-  spdlog::debug("Waiting... agent {0}", this->agent_id());
-  while (!this->message_ready_) {
-    SyncPoint(); // busy waiting, make sure it can be interrupted
+//  if (attached_alp_->GetCancelFlag(this->agent_id_)) {
+//    while (1) {
+//      this->Sleep(1000);
+//    }
+//  }
+  //Semaphore &semaphore_has_response_ = attached_alp_->GetWaitingSemaphore(agent_identifier_.GetId());
+  //spdlog::debug("Waiting... agent {0}",this->agent_id());
+  this->message_waiting_sem_.Wait();
+  //semaphore_has_response_.Wait();
+  //spdlog::debug("Wait finished! agent {0}",this->agent_id());
+  if (attached_alp_->GetCancelFlag(this->agent_id_)) {
+
+    this->SyncPoint();
+    spdlog::error("Not correctly terminated with cancel flag set!");
+    exit(1);
   }
-  spdlog::debug("Wait finished! agent {0}", this->agent_id());
-  this->SyncPoint();
-  this->message_ready_ = false;
 }
 
 void Agent::Finalise() {
@@ -215,26 +223,26 @@ void Agent::attach_alp(Alp *alp) {
 }
 
 const int Agent::ReadInt(unsigned long variable_id, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const SingleReadResponseMessage *ret = this->SendReadMessageAndGetResponse(variable_id, timestamp);
   auto v = dynamic_cast<const Value<int> *>(ret->GetValue())->GetValue();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
   return v;
 
 }
 
 
 const double Agent::ReadDouble(unsigned long variable_id, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
 
   const SingleReadResponseMessage *ret = this->SendReadMessageAndGetResponse(variable_id, timestamp);
   auto v = ((const Value<double> *) (ret->GetValue()))->GetValue();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
   return v;
 }
 
 const Point Agent::ReadPoint(unsigned long variable_id, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const SingleReadResponseMessage *ret = this->SendReadMessageAndGetResponse(variable_id, timestamp);
 //  ostringstream out=ostringstream();
 //  ret->Serialise(out);
@@ -251,15 +259,15 @@ const Point Agent::ReadPoint(unsigned long variable_id, unsigned long timestamp)
   //auto v = (dynamic_cast<const Value<Point> *>(ret->GetValue()))->GetValue();
   auto v = p->GetValue();
 
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
   return v;
 }
 
 const string Agent::ReadString(unsigned long variable_id, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const SingleReadResponseMessage *ret = this->SendReadMessageAndGetResponse(variable_id, timestamp);
   auto v = dynamic_cast<const Value<string> *>(ret->GetValue())->GetValue();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
   return v;
 }
 
@@ -296,109 +304,108 @@ bool Agent::WritePrivateString(unsigned long variable_id, string v) {
 }
 
 bool Agent::WriteInt(unsigned long variable_id, int value, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const WriteResponseMessage *ret = SendWriteMessageAndGetResponse<int>(variable_id, value, timestamp);
 
   WriteStatus status = ret->GetWriteStatus();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
   return status == writeSUCCESS;
 }
 
 bool Agent::WriteDouble(unsigned long variable_id, double value, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const WriteResponseMessage *ret = SendWriteMessageAndGetResponse<double>(variable_id, value, timestamp);
   assert(ret != nullptr);
   WriteStatus status = ret->GetWriteStatus();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return status == writeSUCCESS;
 }
 
 bool Agent::WritePoint(unsigned long variable_id, Point value, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const WriteResponseMessage *ret = SendWriteMessageAndGetResponse<Point>(variable_id, value, timestamp);
 
   WriteStatus status = ret->GetWriteStatus();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return status == writeSUCCESS;
 }
 
 bool Agent::WriteString(unsigned long variable_id, string value, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const WriteResponseMessage *ret = SendWriteMessageAndGetResponse<string>(variable_id, value, timestamp);
 
   WriteStatus status = ret->GetWriteStatus();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return status == writeSUCCESS;
 }
 
 bool Agent::WriteMbInt(unsigned long agent_id, int value, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetGVT());
   const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<int>(agent_id, value, timestamp);
 
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return true;
 }
 
 
 bool Agent::WriteMbDouble(unsigned long agent_id, double value, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetGVT());
   const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<double>(agent_id, value, timestamp);
 
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return true;
 }
 
 
 bool Agent::WriteMbPoint(unsigned long agent_id, Point value, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetGVT());
   const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<Point>(agent_id, value, timestamp);
 
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return true;
 }
 
 
 bool Agent::WriteMbString(unsigned long agent_id, string value, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetGVT());
   const MbWriteResponseMsg *resp = SendMbWriteMessageAndGetResponse<string>(agent_id, value, timestamp);
 
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return true;
 }
 
 const SerialisableMap<SsvId, Value<Point> >
 Agent::RangeQueryPoint(const Point start, const Point end, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const RangeQueryMessage *ret = SendRangeQueryPointMessageAndGetResponse(timestamp, start, end);
   auto r = ret->GetSsvValueList();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return r;
 }
 
 const SerialisableList<MbMail> Agent::RequestNewMails(unsigned long pOwnerId, unsigned long timestamp) {
-  assert(timestamp >= this->GetLVT());
+  assert(timestamp > this->GetLVT());
   const MbReadResponseMsg *resp = SendMbReadMessageAndGetResponse(timestamp);
   auto result = resp->GetMailList();
-  this->SetLVT(timestamp + 1);
+  this->SetLVT(timestamp);
 
   return result;
 }
 
-void Agent::SetMessageArriveFlag() {
-  message_ready_ = true;
+void Agent::NotifyMessageArrive() {
+  this->message_waiting_sem_.Signal();
 }
 
-void Agent::ResetMessageArriveFlag() {
-
-  message_ready_ = false;
+void Agent::ResetMessageArriveSemaphore() {
+  this->message_waiting_sem_.Reset();
 }
 
 Agent::~Agent() {

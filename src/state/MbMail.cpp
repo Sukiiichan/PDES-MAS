@@ -22,11 +22,10 @@ MbMail::MbMail(const MbMail & pMbMessage){
 }
 
 MbMail::~MbMail() { //
-  // FIXME this destructor
-//    if (fValue != NULL) {
-//        delete fValue;
-//        fValue = NULL;
-//    }
+    if (fValue != NULL) {
+        delete fValue;
+        fValue = NULL;
+    }
 }
 
 // operations on single msg

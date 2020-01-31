@@ -47,7 +47,6 @@ namespace pdesmas {
     unsigned int GetRankFromDirection(const Direction) const;
 
     void SetSsvIdHost(SsvId, Direction);
-    void SetMbSsvIdHost(SsvId, Direction);
   };
 }
 #endif

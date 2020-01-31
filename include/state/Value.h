@@ -184,8 +184,8 @@ namespace pdesmas {
       fType = VALUELONG;
     } else {
 
-      spdlog::error("Value::InitDescription# Unknown type encountered while constructing value! name: {0}",
-                    typeid(valueType).name());
+      spdlog::critical("Value::InitDescription# Unknown type encountered while constructing value! name: {0}",
+                       typeid(valueType).name());
       exit(1);
     }
   }
